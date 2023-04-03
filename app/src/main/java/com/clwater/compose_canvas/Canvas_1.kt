@@ -1,17 +1,12 @@
 package com.clwater.compose_canvas
 
-import android.graphics.Paint
-import android.graphics.Paint.Style
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.LinearGradientShader
-import androidx.compose.ui.graphics.PaintingStyle
-import androidx.compose.ui.graphics.RadialGradientShader
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.tooling.preview.Preview
@@ -21,13 +16,14 @@ val mButtonWidth = 200.dp
 val mButtonHeight = 50.dp
 val mRadius = mButtonHeight / 2f
 val mCommonBackgroundColor = Color.Gray
+val mShadowWidth = 3.dp
 
 @Preview(showBackground = true)
 @Composable
 fun Canvas_1() {
 
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.padding(top =  100.dp, start = 10.dp).fillMaxSize()
     ){
         Canvas(
             modifier = Modifier
@@ -62,56 +58,44 @@ fun DrawScope.drawBackground() {
 
     val linearColor = LinearGradientShader(
         from = Offset(0f, 0f),
-        to = Offset(mButtonWidth.toPx(), mButtonHeight.toPx()),
+        to = Offset(mButtonWidth.toPx() + mRadius.toPx(), mButtonHeight.toPx() + mRadius.toPx()),
         colors = listOf(
-            Color.Red,
-            Color.Blue,
-            Color.Green
-        )
-    )
-
-    val rediaPoint_1 = RadialGradientShader(
-        center = Offset(mRadius.toPx() * 1.5f, mRadius.toPx()),
-        radius = mRadius.toPx() * 2,
-        colors = listOf(
-            Color.Black,
-            Color.Gray,
+            Color(0x80000000),
+            Color(0x80000000),
+            Color(0x80F0F0F0),
         )
     )
 
     drawIntoCanvas {
-        it.drawRoundRect(
-            left = 0f,
-            top = 0f,
-            right = mButtonWidth.toPx(),
-            bottom = mButtonHeight.toPx(),
-            radiusX = mRadius.toPx(),
-            radiusY = mRadius.toPx(),
-            paint = androidx.compose.ui.graphics.Paint().apply {
-//                color = mCommonBackgroundColor
-                shader = rediaPoint_1
-                style  = PaintingStyle.Stroke
-                strokeWidth = 3.dp.toPx()
-            }
-        )
+
 
         it.drawRoundRect(
-            left = 0f,
-            top = 0f,
-            right = mButtonWidth.toPx(),
-            bottom = mButtonHeight.toPx(),
+            left = mShadowWidth.toPx() / 2,
+            top = mShadowWidth.toPx() / 2,
+            right = mButtonWidth.toPx() - mShadowWidth.toPx() / 2,
+            bottom = mButtonHeight.toPx() - mShadowWidth.toPx() / 2,
             radiusX = mRadius.toPx(),
             radiusY = mRadius.toPx(),
-            paint = androidx.compose.ui.graphics.Paint().apply {
+            paint = Paint().apply {
                 color = mCommonBackgroundColor
-//                shader = rediaPoint_1
+                style  = PaintingStyle.Fill
+                strokeWidth = mShadowWidth.toPx()
             }
         )
 
-
-
-
-
+        it.drawRoundRect(
+            left = 0f,
+            top = 0f,
+            right = mButtonWidth.toPx(),
+            bottom = mButtonHeight.toPx(),
+            radiusX = mRadius.toPx(),
+            radiusY = mRadius.toPx(),
+            paint = Paint().apply {
+                shader = linearColor
+                style  = PaintingStyle.Stroke
+                strokeWidth = mShadowWidth.toPx()
+            }
+        )
 
 
     }
