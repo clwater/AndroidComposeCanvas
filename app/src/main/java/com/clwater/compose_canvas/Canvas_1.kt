@@ -1,12 +1,12 @@
 package com.clwater.compose_canvas
 
 import android.graphics.Bitmap
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffXfermode
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
@@ -35,6 +35,7 @@ val mLightBackgroundColor = listOf(
 
 val mSunColor = Color(0xFFFFB300)
 val mSunTopShadowColor = Color(0xFFFFECB3)
+val mSunBottomShadowColor = Color(0xFF827717)
 val mSunRadius = mRadius * 0.9f
 
 val mCommonBackgroundColor = Color.Gray
@@ -42,26 +43,105 @@ val mCommonBackgroundColor = Color.Gray
 @Preview
 @Composable
 fun Canvas_1() {
+    Box(modifier = Modifier
+        .width(mCanvasWidth)
+        .height(mCanvasHeight)
+        .clip(RoundedCornerShape(mCanvasRadius))
+        .clipToBounds()) {
 
-    Column(
-        modifier = Modifier
-            .padding(top = 100.dp, start = 10.dp)
-            .fillMaxSize()
-    ){
-        Canvas(
-            modifier = Modifier
-                .width(mCanvasWidth)
-                .height(mCanvasHeight)
-                .clip(RoundedCornerShape(mCanvasRadius))
-                .clipToBounds()
-            ,
-            onDraw = {
-                drawBackground()
-                drawSun()
-            }
-        )
+        Background()
+        Sun()
     }
 }
+
+@Composable
+fun Sun(){
+    val centerX = mSunRadius + mCanvasHeight -  mSunRadius * 2f
+    val centerY =  mCanvasHeight / 2f
+
+    val infiniteTransition = rememberInfiniteTransition()
+    val offset by infiniteTransition.animateFloat(
+        initialValue = -1f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 1000,
+                easing = LinearEasing
+            ),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+
+    Canvas(
+        modifier = Modifier
+            .width(mSunRadius * 2f)
+            .height(mSunRadius * 2f)
+            .offset(x = centerX - mSunRadius, y = centerY - mSunRadius)
+            .clip(RoundedCornerShape(mCanvasRadius))
+            .clipToBounds()
+        ,
+    ){
+        with(drawContext.canvas.nativeCanvas) {
+            val checkPoint = saveLayer(null, null)
+            drawCircle(
+                color = mSunTopShadowColor,
+                radius = mSunRadius.toPx() + mSunRadius.toPx() * 0.1f * offset,
+                center = Offset(centerX.toPx(), centerY.toPx())
+            )
+            drawCircle(
+                color = mSunColor,
+                radius = mSunRadius.toPx(),
+                center = Offset(centerX.toPx() + mSunRadius.toPx() * 0.15f,
+                    mCanvasHeight.toPx() / 2f + mSunRadius.toPx() * 0.15f),
+                blendMode = BlendMode.SrcIn
+            )
+            restoreToCount(checkPoint)
+        }
+    }
+}
+
+@Composable
+fun Background(){
+
+    Canvas(
+        modifier = Modifier
+            .width(mCanvasWidth)
+            .height(mCanvasHeight)
+            .clip(RoundedCornerShape(mCanvasRadius))
+            .clipToBounds()
+        ,
+        onDraw = {
+            val maxRadius = mCanvasWidth.toPx() - mCanvasRadius.toPx() * 1.5f
+            val minRadius =  maxRadius * 0.45f
+
+            drawCircle(
+                color = mLightBackgroundColor[0],
+                radius = maxRadius * 1.1f,
+                center = Offset(mRadius.toPx() * 1.5f, mCanvasHeight.toPx() / 2f)
+            )
+
+            drawCircle(
+                color = mLightBackgroundColor[1],
+                radius = minRadius + (maxRadius - minRadius ) / 7f * 4f,
+                center = Offset(mRadius.toPx() * 1.5f, mCanvasHeight.toPx() / 2f)
+            )
+
+            drawCircle(
+                color = mLightBackgroundColor[2],
+                radius = minRadius + (maxRadius - minRadius ) / 7f * 2f,
+                center = Offset(mRadius.toPx() * 1.5f, mCanvasHeight.toPx() / 2f)
+            )
+
+            drawCircle(
+                color = mLightBackgroundColor[3],
+                radius = minRadius,
+                center = Offset(mRadius.toPx() * 1.5f, mCanvasHeight.toPx() / 2f)
+            )
+        }
+    )
+}
+
 
 fun getBitmapCircle(radius: Int, color: Color) : Bitmap {
     val bitmap = Bitmap.createBitmap(
@@ -90,62 +170,3 @@ fun DrawScope.drawSunTopShadow() {
 
 
 }
-
-fun DrawScope.drawSun() {
-    val centerX = mSunRadius + mCanvasHeight -  mSunRadius * 2f
-    val centerY =  mCanvasHeight / 2f
-
-    with(drawContext.canvas.nativeCanvas) {
-        val checkPoint = saveLayer(null, null)
-
-        drawCircle(
-            color = mSunTopShadowColor,
-            radius = mSunRadius.toPx(),
-            center = Offset(centerX.toPx(), centerY.toPx())
-        )
-
-        drawCircle(
-            color = mSunColor,
-            radius = mSunRadius.toPx() * 1.1f,
-            center = Offset(centerX.toPx() + mSunRadius.toPx() * 0.15f,
-                mCanvasHeight.toPx() / 2f + mSunRadius.toPx() * 0.15f),
-            blendMode = BlendMode.SrcIn
-        )
-
-    }
-
-
-
-}
-
-
-fun DrawScope.drawBackground() {
-    val maxRadius = mCanvasWidth.toPx() - mCanvasRadius.toPx() * 1.5f
-    val minRadius =  maxRadius * 0.45f
-
-    drawCircle(
-        color = mLightBackgroundColor[0],
-        radius = maxRadius * 1.1f,
-        center = Offset(mRadius.toPx() * 1.5f, mCanvasHeight.toPx() / 2f)
-    )
-
-    drawCircle(
-        color = mLightBackgroundColor[1],
-        radius = minRadius + (maxRadius - minRadius ) / 7f * 4f,
-        center = Offset(mRadius.toPx() * 1.5f, mCanvasHeight.toPx() / 2f)
-    )
-
-    drawCircle(
-        color = mLightBackgroundColor[2],
-        radius = minRadius + (maxRadius - minRadius ) / 7f * 2f,
-        center = Offset(mRadius.toPx() * 1.5f, mCanvasHeight.toPx() / 2f)
-    )
-
-    drawCircle(
-        color = mLightBackgroundColor[3],
-        radius = minRadius,
-        center = Offset(mRadius.toPx() * 1.5f, mCanvasHeight.toPx() / 2f)
-    )
-}
-
-
