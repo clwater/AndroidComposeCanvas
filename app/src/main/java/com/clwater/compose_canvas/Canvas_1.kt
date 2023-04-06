@@ -13,8 +13,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import android.graphics.Canvas as AndroidCanvas
@@ -52,9 +54,55 @@ fun Canvas_1() {
             .height(mCanvasHeight)
     ) {
         Background()
-        SunCloud()
-        Sun()
+//        SunCloud()
+        BackgroundShadow()
+//        Sun()
     }
+}
+
+@Composable
+fun BackgroundShadow(){
+    Canvas(
+        modifier = Modifier
+            .width(mCanvasWidth)
+            .height(mCanvasHeight)
+//            .clipToBounds()
+//            .clip(RoundedCornerShape(mCanvasRadius))
+        ,
+        ){
+
+        val linearColor = LinearGradientShader(
+            from = Offset(-mRadius.toPx(), -mRadius.toPx()),
+            to = Offset(mButtonWidth.toPx() - mRadius.toPx(), mButtonHeight.toPx()),
+            colorStops = listOf(
+                0f,
+                0.5f ,
+                1f
+            ),
+            colors = listOf(
+                Color(0xFF000000),
+                Color.White,
+                Color(0xFF000000)
+            )
+        )
+
+
+        drawIntoCanvas {
+            it.drawRoundRect(
+                left = 0f,
+                top = 0f,
+                right = mCanvasWidth.toPx(),
+                bottom = mCanvasHeight.toPx(),
+                radiusX = mRadius.toPx(),
+                radiusY = mRadius.toPx(),
+                paint = Paint().apply {
+                    shader = linearColor
+                    style = PaintingStyle.Fill
+                }
+            )
+        }
+    }
+
 }
 
 @Composable
@@ -170,8 +218,10 @@ fun Sun(){
         modifier = Modifier
             .width(mSunRadius * 2f)
             .height(mSunRadius * 2f)
-            .offset(x = (mCanvasHeight -  mSunRadius * 2f) / 2f,
-                    y = (mCanvasHeight -  mSunRadius * 2f) / 2f)
+            .offset(
+                x = (mCanvasHeight - mSunRadius * 2f) / 2f,
+                y = (mCanvasHeight - mSunRadius * 2f) / 2f
+            )
             .clip(RoundedCornerShape(mCanvasRadius))
             .clipToBounds()
         ,
