@@ -36,8 +36,8 @@ val mLightBackgroundColor = listOf(
 )
 
 val mSunColor = Color(0xFFFFD54F)
-val mSunTopShadowColor = Color(0xFFFFF9C4)
-val mSunBottomShadowColor = Color(0xFF827717)
+val mSunTopShadowColor = Color(0xFFFFFFFF)
+val mSunBottomShadowColor = Color(0x80827717)
 val mSunRadius = mRadius * 0.9f
 
 val mCommonBackgroundColor = Color.Gray
@@ -73,6 +73,44 @@ fun SunCloud() {
     val shadowOffsetY = listOf(1f, 2f, 2f, 2f, 1f, 1f, 1f)
     val shadowOffsetX = listOf(0f, 0f, 0f, 0f, 0f, 0f, -0.8f)
 
+    val infiniteTransition = rememberInfiniteTransition()
+    val animationOffsetX by infiniteTransition.animateFloat(
+        initialValue = -1f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 3100 ,
+                easing = LinearEasing
+            ),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    val animationOffsetY by infiniteTransition.animateFloat(
+        initialValue = -1f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 2900,
+                easing = LinearEasing
+            ),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    val animationOffsetRadius by infiniteTransition.animateFloat(
+        initialValue = -1f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 3000,
+                easing = LinearEasing
+            ),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+
 
     Canvas(
         modifier = Modifier
@@ -86,9 +124,9 @@ fun SunCloud() {
         for (i in 0..6) {
             drawCircle(
                 color = cloudColorShadow,
-                radius = mRadius.toPx() * offsetRadius[i],
-                center = Offset(size.width - cloudOffsetX.toPx() * i + baseOffsetX.toPx() - baseOffsetX.toPx() * shadowOffsetX[i],
-                    size.height / 2f + cloudOffsetY.toPx() * offsetX[i] + baseOffsetY.toPx() + cloudShadowOffsetY.toPx() * shadowOffsetY[i])
+                radius = mRadius.toPx() * offsetRadius[i] + mRadius.toPx() * 0.08f * animationOffsetRadius,
+                center = Offset(size.width - cloudOffsetX.toPx() * i + baseOffsetX.toPx() - baseOffsetX.toPx() * shadowOffsetX[i] + size.width * 0.05f * animationOffsetX,
+                    size.height / 2f + cloudOffsetY.toPx() * offsetX[i] + baseOffsetY.toPx() + cloudShadowOffsetY.toPx() * shadowOffsetY[i] + size.height / 2f * 0.05f * animationOffsetY)
             )
         }
     }
@@ -104,9 +142,9 @@ fun SunCloud() {
         for (i in 0..6) {
             drawCircle(
                 color = cloudColor,
-                radius = mRadius.toPx() * offsetRadius[i],
-                center = Offset(size.width - cloudOffsetX.toPx() * i + baseOffsetX.toPx(),
-                    size.height / 2f + cloudOffsetY.toPx() * offsetX[i] + baseOffsetY.toPx())
+                radius = mRadius.toPx() * offsetRadius[i] + mRadius.toPx() * 0.06f * animationOffsetRadius,
+                center = Offset(size.width - cloudOffsetX.toPx() * i + baseOffsetX.toPx() + size.width * 0.04f * animationOffsetX,
+                    size.height / 2f + cloudOffsetY.toPx() * offsetX[i] + baseOffsetY.toPx() + size.height / 2f * 0.04f * animationOffsetY)
             )
         }
     }
