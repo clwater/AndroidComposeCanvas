@@ -19,7 +19,7 @@ import android.graphics.Canvas as AndroidCanvas
 import android.graphics.Paint as AndroidPaint
 
 
-val mCanvasWidth = 150.dp
+val mCanvasWidth = 120.dp
 val mCanvasHeight = 50.dp
 val mCanvasRadius = mCanvasHeight / 2f
 val mShadowWidth = 3.dp
@@ -33,8 +33,8 @@ val mLightBackgroundColor = listOf(
     Color(0xFF42A5F5),
 )
 
-val mSunColor = Color(0xFFFFB300)
-val mSunTopShadowColor = Color(0xFFFFECB3)
+val mSunColor = Color(0xFFFFEB3B)
+val mSunTopShadowColor = Color(0xFFFFF9C4)
 val mSunBottomShadowColor = Color(0xFF827717)
 val mSunRadius = mRadius * 0.9f
 
@@ -44,21 +44,18 @@ val mCommonBackgroundColor = Color.Gray
 @Composable
 fun Canvas_1() {
     Box(modifier = Modifier
+        .padding(top = 100.dp, start =  100.dp)
         .width(mCanvasWidth)
         .height(mCanvasHeight)
         .clip(RoundedCornerShape(mCanvasRadius))
         .clipToBounds()) {
-
-        Background()
-        Sun()
+            Background()
+            Sun()
     }
 }
 
 @Composable
 fun Sun(){
-    val centerX = mSunRadius + mCanvasHeight -  mSunRadius * 2f
-    val centerY =  mCanvasHeight / 2f
-
     val infiniteTransition = rememberInfiniteTransition()
     val offset by infiniteTransition.animateFloat(
         initialValue = -1f,
@@ -77,7 +74,8 @@ fun Sun(){
         modifier = Modifier
             .width(mSunRadius * 2f)
             .height(mSunRadius * 2f)
-            .offset(x = centerX - mSunRadius, y = centerY - mSunRadius)
+            .offset(x = (mCanvasHeight -  mSunRadius * 2f) / 2f,
+                    y = (mCanvasHeight -  mSunRadius * 2f) / 2f)
             .clip(RoundedCornerShape(mCanvasRadius))
             .clipToBounds()
         ,
@@ -86,18 +84,37 @@ fun Sun(){
             val checkPoint = saveLayer(null, null)
             drawCircle(
                 color = mSunTopShadowColor,
-                radius = mSunRadius.toPx() + mSunRadius.toPx() * 0.1f * offset,
-                center = Offset(centerX.toPx(), centerY.toPx())
+                radius = mSunRadius.toPx() + mSunRadius.toPx() * 0.1f,
+                center = Offset(size.width / 2f, size.height / 2f)
             )
             drawCircle(
                 color = mSunColor,
-                radius = mSunRadius.toPx(),
-                center = Offset(centerX.toPx() + mSunRadius.toPx() * 0.15f,
-                    mCanvasHeight.toPx() / 2f + mSunRadius.toPx() * 0.15f),
+                radius = mSunRadius.toPx() * 1.05f,
+                center = Offset(size.width / 2f + mSunRadius.toPx() * 0.05f + mSunRadius.toPx() * 0.005f * offset,
+                    size.height / 2f + mSunRadius.toPx() * 0.1f + mSunRadius.toPx() * 0.005f * offset),
                 blendMode = BlendMode.SrcIn
             )
             restoreToCount(checkPoint)
         }
+
+        with(drawContext.canvas.nativeCanvas) {
+            val checkPoint = saveLayer(null, null)
+            drawCircle(
+                color = mSunBottomShadowColor,
+                radius = mSunRadius.toPx() + mSunRadius.toPx() * 0.1f,
+                center = Offset(size.width / 2f, size.height / 2f)
+            )
+            drawCircle(
+                color = Color.Transparent,
+                radius = mSunRadius.toPx(),
+                center = Offset(size.width / 2f - mSunRadius.toPx() * 0.05f + mSunRadius.toPx() * 0.005f * offset,
+                    size.height / 2f - mSunRadius.toPx() * 0.1f + mSunRadius.toPx() * 0.005f * offset),
+                blendMode = BlendMode.SrcIn
+            )
+            restoreToCount(checkPoint)
+        }
+
+
     }
 }
 
