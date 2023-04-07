@@ -1,6 +1,7 @@
 package com.clwater.compose_canvas
 
 import android.graphics.Bitmap
+import android.graphics.RectF
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -78,50 +79,37 @@ fun BackgroundShadow(){
         val leftSweepShader = SweepGradientShader(
             center = Offset(mCanvasRadius.toPx(), mCanvasRadius.toPx()),
             colors = listOf(
-                Color(0x4D000000),
+                Color(0xFF000000),
                 Color.Transparent,
-                Color(0x4D000000)
+                Color(0xFFFFFFFF)
             ),
             colorStops = listOf(
                 0f,
-                0.4f,
+                0.5f,
                 1f
             )
         )
 
-        val rightSweepShader = SweepGradientShader(
-            center = Offset(mCanvasRadius.toPx(), mCanvasRadius.toPx()),
-            colors = listOf(
-                Color(0x4D000000),
-                Color.Transparent,
-                Color(0x4D000000)
-            ),
-            colorStops = listOf(
-                0f,
-                0.6f,
-                1f
-            )
-        )
 
-        val leftPath = Path().apply {
-            moveTo(mCanvasRadius.toPx(), mCanvasRadius.toPx() * 2)
-            addArc(
-                Rect(
-                    0f, 0f, mCanvasRadius.toPx() * 2, mCanvasRadius.toPx() * 2,
-                    ),
-                90f, 180f
-            )
-        }
-        val rightPath = Path().apply {
-            moveTo(mCanvasWidth.toPx(), mCanvasRadius.toPx() * 2)
-            addArc(
-                Rect(
-                    mCanvasWidth.toPx() - mCanvasRadius.toPx() * 2, 0f,
-                    mCanvasWidth.toPx(), mCanvasRadius.toPx() * 2,
-                ),
-                -90f, 180f
-            )
-        }
+//        val leftPath = Path().apply {
+//            moveTo(mCanvasRadius.toPx(), mCanvasRadius.toPx() * 2)
+//            addArc(
+//                Rect(
+//                    0f, 0f, mCanvasRadius.toPx() * 2, mCanvasRadius.toPx() * 2,
+//                    ),
+//                90f, 180f
+//            )
+//        }
+//        val rightPath = Path().apply {
+//            moveTo(mCanvasWidth.toPx(), mCanvasRadius.toPx() * 2)
+//            addArc(
+//                Rect(
+//                    mCanvasWidth.toPx() - mCanvasRadius.toPx() * 2, 0f,
+//                    mCanvasWidth.toPx(), mCanvasRadius.toPx() * 2,
+//                ),
+//                -90f, 180f
+//            )
+//        }
 
 
 
@@ -132,34 +120,36 @@ fun BackgroundShadow(){
             shader = leftSweepShader
         }
 
-        val rightPaint = Paint().apply {
-            style = PaintingStyle.Stroke
-            strokeWidth = mShadowWidth.toPx()
-            shader = rightSweepShader
-        }
+//        val rightPaint = Paint().apply {
+//            style = PaintingStyle.Stroke
+//            strokeWidth = mShadowWidth.toPx()
+//            shader = rightSweepShader
+//        }
 
 
         drawIntoCanvas {
-                it.drawPath(
-                    path = leftPath,
-                    paint = leftPaint
-                )
-                it.drawPath(
-                    path = rightPath,
-                    paint = rightPaint
-                )
+//                it.drawPath(
+//                    path = leftPath,
+//                    paint = leftPaint
+//                )
+//                it.drawPath(
+//                    path = rightPath,
+//                    paint = rightPaint
+//                )
+            it.drawRect(
+                Rect(
+                    0f, 0f, mCanvasWidth.toPx(), mCanvasHeight.toPx()
+                ),
+                paint = leftPaint
+            )
 
-                it.drawLine(
-                    p1 = Offset(mCanvasRadius.toPx(), 0f),
-                    p2 = Offset(mCanvasWidth.toPx() - mCanvasRadius.toPx(), 0f),
-                    paint = leftPaint
-                )
 
-                it.drawLine(
-                    p1 = Offset(mCanvasRadius.toPx(), mCanvasHeight.toPx()),
-                    p2 = Offset(mCanvasWidth.toPx() - mCanvasRadius.toPx(), mCanvasHeight.toPx()),
-                    paint = leftPaint
-                )
+
+//                it.drawLine(
+//                    p1 = Offset(mCanvasRadius.toPx(), mCanvasHeight.toPx()),
+//                    p2 = Offset(mCanvasWidth.toPx() - mCanvasRadius.toPx(), mCanvasHeight.toPx()),
+//                    paint = leftPaint
+//                )
             }
     }
 
