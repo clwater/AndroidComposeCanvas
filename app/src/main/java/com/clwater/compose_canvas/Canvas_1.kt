@@ -3,10 +3,15 @@ package com.clwater.compose_canvas
 import android.graphics.Bitmap
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.*
 import androidx.compose.ui.geometry.Offset
@@ -14,19 +19,21 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import android.graphics.Canvas as AndroidCanvas
 import android.graphics.Paint as AndroidPaint
 
 
-val mCanvasWidth = 120.dp
-val mCanvasHeight = 50.dp
+val mCanvasWidth = 240.dp
+val mCanvasHeight = 100.dp
 val mCanvasRadius = mCanvasHeight / 2f
-val mShadowWidth = 3.dp
-val mButtonWidth = mCanvasWidth - mShadowWidth * 2
-val mButtonHeight = mCanvasHeight - mShadowWidth * 2
-val mRadius = mCanvasRadius - mShadowWidth
+val mShadowWidth = mCanvasHeight / 9f
+val mButtonWidth = mCanvasWidth - mCanvasHeight / 10f * 2
+val mButtonHeight = mCanvasHeight - mCanvasHeight / 10f * 2
+val mRadius = mCanvasRadius - mCanvasHeight / 10f
 val mLightBackgroundColor = listOf(
     Color(0xFF1565C0),
     Color(0xFF1E88E5),
@@ -35,7 +42,7 @@ val mLightBackgroundColor = listOf(
 )
 
 val mSunColor = Color(0xFFFFD54F)
-val mSunTopShadowColor = Color(0xFFFFFFFF)
+val mSunTopShadowColor = Color(0xCCFFFFFF)
 val mSunBottomShadowColor = Color(0x80827717)
 val mSunRadius = mRadius * 0.9f
 
@@ -163,7 +170,7 @@ fun SunCloud() {
     val cloudOffsetX = (mCanvasWidth - mSunRadius * 1.1f) / 7f
     val cloudOffsetY = mCanvasHeight / 2f / 10f
     val baseOffsetX = - mRadius / 5f
-    val baseOffsetY = mCanvasHeight / 8f
+    val baseOffsetY = mCanvasHeight / 6f
     val cloudShadowOffsetY = - mCanvasHeight / 8f
 
     val cloudColor: Color = Color(0xFFFFFFFF)
@@ -275,6 +282,7 @@ fun Sun(){
                 x = (mCanvasHeight - mSunRadius * 2f) / 2f,
                 y = (mCanvasHeight - mSunRadius * 2f) / 2f
             )
+            .graphicsLayer(alpha = 0.99f)
             .clip(RoundedCornerShape(mCanvasRadius))
             .clipToBounds()
         ,
@@ -284,17 +292,28 @@ fun Sun(){
             drawCircle(
                 color = mSunTopShadowColor,
                 radius = mSunRadius.toPx() + mSunRadius.toPx() * 0.1f,
-                center = Offset(size.width / 2f, size.height / 2f)
+                center = Offset(size.width / 2f, size.height / 2f),
             )
             drawCircle(
-                color = mSunColor,
+                color = Color.Transparent,
                 radius = mSunRadius.toPx() * 1.05f,
-                center = Offset(size.width / 2f + mSunRadius.toPx() * 0.05f + mSunRadius.toPx() * 0.005f * offset,
-                    size.height / 2f + mSunRadius.toPx() * 0.1f + mSunRadius.toPx() * 0.005f * offset),
-                blendMode = BlendMode.SrcIn
+                center = Offset(
+                    size.width / 2f + mSunRadius.toPx() * 0.05f + mSunRadius.toPx() * 0.005f * offset,
+                    size.height / 2f + mSunRadius.toPx() * 0.1f + mSunRadius.toPx() * 0.005f * offset
+                ),
+                blendMode = BlendMode.Clear
             )
             restoreToCount(checkPoint)
         }
+
+        drawCircle(
+            color = mSunColor,
+            radius = mSunRadius.toPx() * 1.05f,
+            center = Offset(
+                size.width / 2f + mSunRadius.toPx() * 0.05f + mSunRadius.toPx() * 0.005f * offset,
+                size.height / 2f + mSunRadius.toPx() * 0.1f + mSunRadius.toPx() * 0.005f * offset
+            ),
+        )
 
         with(drawContext.canvas.nativeCanvas) {
             val checkPoint = saveLayer(null, null)
@@ -308,7 +327,7 @@ fun Sun(){
                 radius = mSunRadius.toPx(),
                 center = Offset(size.width / 2f - mSunRadius.toPx() * 0.05f + mSunRadius.toPx() * 0.005f * offset,
                     size.height / 2f - mSunRadius.toPx() * 0.1f + mSunRadius.toPx() * 0.005f * offset),
-                blendMode = BlendMode.SrcIn
+                blendMode = BlendMode.Clear
             )
             restoreToCount(checkPoint)
         }
@@ -319,7 +338,6 @@ fun Sun(){
 
 @Composable
 fun Background(){
-
     Canvas(
         modifier = Modifier
             .width(mCanvasWidth)
