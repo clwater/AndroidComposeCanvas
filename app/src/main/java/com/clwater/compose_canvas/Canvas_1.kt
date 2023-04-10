@@ -36,7 +36,13 @@ val mLightBackgroundColor = listOf(
 val mSunColor = Color(0xFFFFD54F)
 val mSunTopShadowColor = Color(0xCCFFFFFF)
 val mSunBottomShadowColor = Color(0x80827717)
+
+val mMoonColor = Color(0xFF979797)
+val mMoonTopShadowColor = Color(0xCCFFFFFF)
+val mMoonBottomShadowColor = Color(0xFF5E5E5E)
+
 val mSunRadius = mSunCloudRadius * 0.9f
+val mMoonRadius = mSunCloudRadius * 0.9f
 
 val mCommonBackgroundColor = Color.Gray
 
@@ -53,6 +59,84 @@ fun Canvas_1() {
         SunCloud()
 //        BackgroundShadow()
         Sun()
+        Moon()
+    }
+}
+
+@Composable
+fun Moon() {
+    val infiniteTransition = rememberInfiniteTransition()
+    val offset by infiniteTransition.animateFloat(
+        initialValue = -1f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 1000,
+                easing = LinearEasing
+            ),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+
+    Canvas(
+        modifier = Modifier
+            .width(mMoonRadius * 2f)
+            .height(mMoonRadius * 2f)
+            .offset(
+                x = mCanvasWidth - (mCanvasHeight - mMoonRadius * 2f) / 2f - mMoonRadius * 2f,
+                y = (mCanvasHeight - mMoonRadius * 2f) / 2f
+            )
+            .graphicsLayer(alpha = 0.99f)
+            .clip(RoundedCornerShape(mCanvasRadius))
+            .clipToBounds()
+        ,
+    ){
+        with(drawContext.canvas.nativeCanvas) {
+            val checkPoint = saveLayer(null, null)
+            drawCircle(
+                color = mMoonTopShadowColor,
+                radius = mMoonRadius.toPx() + mMoonRadius.toPx() * 0.1f,
+                center = Offset(size.width / 2f, size.height / 2f),
+            )
+            drawCircle(
+                color = Color.Transparent,
+                radius = mMoonRadius.toPx() * 1.05f,
+                center = Offset(
+                    size.width / 2f + mMoonRadius.toPx() * 0.05f + mMoonRadius.toPx() * 0.005f * offset,
+                    size.height / 2f + mMoonRadius.toPx() * 0.1f + mMoonRadius.toPx() * 0.005f * offset
+                ),
+                blendMode = BlendMode.Clear
+            )
+            restoreToCount(checkPoint)
+        }
+
+        drawCircle(
+            color = mMoonColor,
+            radius = mMoonRadius.toPx() * 1.05f,
+            center = Offset(
+                size.width / 2f + mMoonRadius.toPx() * 0.05f + mMoonRadius.toPx() * 0.005f * offset,
+                size.height / 2f + mMoonRadius.toPx() * 0.1f + mMoonRadius.toPx() * 0.005f * offset
+            ),
+        )
+
+        with(drawContext.canvas.nativeCanvas) {
+            val checkPoint = saveLayer(null, null)
+            drawCircle(
+                color = mMoonBottomShadowColor,
+                radius = mMoonRadius.toPx() + mMoonRadius.toPx() * 0.1f,
+                center = Offset(size.width / 2f, size.height / 2f)
+            )
+            drawCircle(
+                color = Color.Transparent,
+                radius = mMoonRadius.toPx(),
+                center = Offset(size.width / 2f - mMoonRadius.toPx() * 0.05f + mMoonRadius.toPx() * 0.005f * offset,
+                    size.height / 2f - mMoonRadius.toPx() * 0.1f + mMoonRadius.toPx() * 0.005f * offset),
+                blendMode = BlendMode.Clear
+            )
+            restoreToCount(checkPoint)
+        }
+
     }
 }
 
@@ -260,7 +344,6 @@ fun Sun(){
             )
             restoreToCount(checkPoint)
         }
-
 
     }
 }
