@@ -1,29 +1,20 @@
 package com.clwater.compose_canvas
 
 import android.graphics.Bitmap
-import android.graphics.RectF
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.*
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import android.graphics.Canvas as AndroidCanvas
 import android.graphics.Paint as AndroidPaint
 
@@ -34,7 +25,7 @@ val mCanvasRadius = mCanvasHeight / 2f
 val mShadowWidth = mCanvasHeight / 9f
 val mButtonWidth = mCanvasWidth - mCanvasHeight / 10f * 2
 val mButtonHeight = mCanvasHeight - mCanvasHeight / 10f * 2
-val mRadius = mCanvasRadius - mCanvasHeight / 10f
+val mSunCloudRadius = mCanvasRadius - mCanvasHeight / 10f
 val mLightBackgroundColor = listOf(
     Color(0xFF1565C0),
     Color(0xFF1E88E5),
@@ -45,7 +36,7 @@ val mLightBackgroundColor = listOf(
 val mSunColor = Color(0xFFFFD54F)
 val mSunTopShadowColor = Color(0xCCFFFFFF)
 val mSunBottomShadowColor = Color(0x80827717)
-val mSunRadius = mRadius * 0.9f
+val mSunRadius = mSunCloudRadius * 0.9f
 
 val mCommonBackgroundColor = Color.Gray
 
@@ -60,113 +51,61 @@ fun Canvas_1() {
     ) {
         Background()
         SunCloud()
-        BackgroundShadow()
+//        BackgroundShadow()
         Sun()
     }
 }
 
-@Composable
-fun BackgroundShadow(){
-    Canvas(
-        modifier = Modifier
-            .width(mCanvasWidth)
-            .height(mCanvasHeight)
-            .clipToBounds()
-            .clip(RoundedCornerShape(mCanvasRadius))
-        ,
-        ){
-
-        val leftSweepShader = SweepGradientShader(
-            center = Offset(mCanvasRadius.toPx(), mCanvasRadius.toPx()),
-            colors = listOf(
-                Color(0xFF000000),
-                Color.Transparent,
-                Color(0xFFFFFFFF)
-            ),
-            colorStops = listOf(
-                0f,
-                0.5f,
-                1f
-            )
-        )
-
-
-//        val leftPath = Path().apply {
-//            moveTo(mCanvasRadius.toPx(), mCanvasRadius.toPx() * 2)
-//            addArc(
-//                Rect(
-//                    0f, 0f, mCanvasRadius.toPx() * 2, mCanvasRadius.toPx() * 2,
-//                    ),
-//                90f, 180f
+//@Composable
+//fun BackgroundShadow() {
+//    Canvas(
+//        modifier = Modifier
+//            .width(mCanvasWidth)
+//            .height(mCanvasHeight)
+//            .clipToBounds()
+//            .clip(RoundedCornerShape(mCanvasRadius))
+//    ) {
+//        val leftShader = RadialGradientShader(
+//            center = Offset(mCanvasRadius.toPx(), mCanvasRadius.toPx()),
+//            radius = mCanvasRadius.toPx(),
+//            colors = listOf(
+//                Color.Red,
+//                Color.Transparent,
+//                Color.Green
+//            ),
+//        )
+//        val leftPaint = Paint().apply {
+//            shader = leftShader
+//        }
+//        drawIntoCanvas {
+//            it.drawArc(
+//                left = 0f,
+//                top = 0f,
+//                right = mCanvasRadius.toPx() * 2,
+//                bottom = mCanvasRadius.toPx() * 2,
+//                startAngle = 225f,
+//                sweepAngle = 45f,
+//                useCenter = true,
+//                paint = leftPaint
 //            )
 //        }
-//        val rightPath = Path().apply {
-//            moveTo(mCanvasWidth.toPx(), mCanvasRadius.toPx() * 2)
-//            addArc(
-//                Rect(
-//                    mCanvasWidth.toPx() - mCanvasRadius.toPx() * 2, 0f,
-//                    mCanvasWidth.toPx(), mCanvasRadius.toPx() * 2,
-//                ),
-//                -90f, 180f
-//            )
-//        }
-
-
-
-
-        val leftPaint = Paint().apply {
-            style = PaintingStyle.Stroke
-            strokeWidth = mShadowWidth.toPx()
-            shader = leftSweepShader
-        }
-
-//        val rightPaint = Paint().apply {
-//            style = PaintingStyle.Stroke
-//            strokeWidth = mShadowWidth.toPx()
-//            shader = rightSweepShader
-//        }
-
-
-        drawIntoCanvas {
-//                it.drawPath(
-//                    path = leftPath,
-//                    paint = leftPaint
-//                )
-//                it.drawPath(
-//                    path = rightPath,
-//                    paint = rightPaint
-//                )
-            it.drawRect(
-                Rect(
-                    0f, 0f, mCanvasWidth.toPx(), mCanvasHeight.toPx()
-                ),
-                paint = leftPaint
-            )
-
-
-
-//                it.drawLine(
-//                    p1 = Offset(mCanvasRadius.toPx(), mCanvasHeight.toPx()),
-//                    p2 = Offset(mCanvasWidth.toPx() - mCanvasRadius.toPx(), mCanvasHeight.toPx()),
-//                    paint = leftPaint
-//                )
-            }
-    }
-
-}
+//
+//    }
+//
+//}
 
 @Composable
 fun SunCloud() {
     val cloudOffsetX = (mCanvasWidth - mSunRadius * 1.1f) / 7f
     val cloudOffsetY = mCanvasHeight / 2f / 10f
-    val baseOffsetX = - mRadius / 5f
+    val baseOffsetX = - mSunCloudRadius / 5f
     val baseOffsetY = mCanvasHeight / 6f
     val cloudShadowOffsetY = - mCanvasHeight / 8f
 
     val cloudColor: Color = Color(0xFFFFFFFF)
     val cloudColorShadow: Color = Color(0xFFFFFFFF)
 
-    val offsetRadius = listOf(1f, 0.8f, 0.6f, 0.4f, 0.6f, 0.8f, 0.6f)
+    val offsetRadius = listOf(1f, 0.8f, 0.6f, 0.5f, 0.6f, 0.8f, 0.6f)
     val offsetX = listOf(0, 2, 4, 6, 7, 8, 8)
     val shadowOffsetY = listOf(1f, 2f, 2f, 2f, 1f, 1f, 1f)
     val shadowOffsetX = listOf(0f, 0f, 0f, 0f, 0f, 0f, -0.8f)
@@ -222,7 +161,7 @@ fun SunCloud() {
         for (i in 0..6) {
             drawCircle(
                 color = cloudColorShadow,
-                radius = mRadius.toPx() * offsetRadius[i] + mRadius.toPx() * 0.08f * animationOffsetRadius,
+                radius = mSunCloudRadius.toPx() * offsetRadius[i] + mSunCloudRadius.toPx() * 0.08f * animationOffsetRadius,
                 center = Offset(size.width - cloudOffsetX.toPx() * i + baseOffsetX.toPx() - baseOffsetX.toPx() * shadowOffsetX[i] + size.width * 0.05f * animationOffsetX,
                     size.height / 2f + cloudOffsetY.toPx() * offsetX[i] + baseOffsetY.toPx() + cloudShadowOffsetY.toPx() * shadowOffsetY[i] + size.height / 2f * 0.05f * animationOffsetY)
             )
@@ -240,7 +179,7 @@ fun SunCloud() {
         for (i in 0..6) {
             drawCircle(
                 color = cloudColor,
-                radius = mRadius.toPx() * offsetRadius[i] + mRadius.toPx() * 0.06f * animationOffsetRadius,
+                radius = mSunCloudRadius.toPx() * offsetRadius[i] + mSunCloudRadius.toPx() * 0.06f * animationOffsetRadius,
                 center = Offset(size.width - cloudOffsetX.toPx() * i + baseOffsetX.toPx() + size.width * 0.04f * animationOffsetX,
                     size.height / 2f + cloudOffsetY.toPx() * offsetX[i] + baseOffsetY.toPx() + size.height / 2f * 0.04f * animationOffsetY)
             )
@@ -342,25 +281,25 @@ fun Background(){
             drawCircle(
                 color = mLightBackgroundColor[0],
                 radius = maxRadius * 1.1f,
-                center = Offset(mRadius.toPx() * 1.5f, mCanvasHeight.toPx() / 2f)
+                center = Offset(mSunCloudRadius.toPx() * 1.5f, mCanvasHeight.toPx() / 2f)
             )
 
             drawCircle(
                 color = mLightBackgroundColor[1],
                 radius = minRadius + (maxRadius - minRadius ) / 7f * 4f,
-                center = Offset(mRadius.toPx() * 1.5f, mCanvasHeight.toPx() / 2f)
+                center = Offset(mSunCloudRadius.toPx() * 1.5f, mCanvasHeight.toPx() / 2f)
             )
 
             drawCircle(
                 color = mLightBackgroundColor[2],
                 radius = minRadius + (maxRadius - minRadius ) / 7f * 2f,
-                center = Offset(mRadius.toPx() * 1.5f, mCanvasHeight.toPx() / 2f)
+                center = Offset(mSunCloudRadius.toPx() * 1.5f, mCanvasHeight.toPx() / 2f)
             )
 
             drawCircle(
                 color = mLightBackgroundColor[3],
                 radius = minRadius,
-                center = Offset(mRadius.toPx() * 1.5f, mCanvasHeight.toPx() / 2f)
+                center = Offset(mSunCloudRadius.toPx() * 1.5f, mCanvasHeight.toPx() / 2f)
             )
         }
     )
