@@ -18,6 +18,7 @@ import com.clwater.compose_canvas.ui.theme.AndroidComposeCanvasTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Canvas1Activity.start(this@MainActivity)
         setContent {
             AndroidComposeCanvasTheme {
                 // A surface container using the 'background' color from the theme
