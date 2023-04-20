@@ -6,12 +6,12 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -56,7 +56,7 @@ class Canvas1Activity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize().background(Color.Blue)
                     ) {
                         Canvas_1()
                         Slider(value = model.progress.value,
@@ -79,6 +79,7 @@ class Canvas1Activity : ComponentActivity() {
                             }) {
                                 Text("To Moon")
                             }
+                            Spacer(modifier = Modifier.width(20.dp))
                             Button(onClick = {
                                 model.startStatus.value = Star.ToSun
                                 model.progress.value = 1f
@@ -109,10 +110,10 @@ class Canvas1Activity : ComponentActivity() {
         Color(0xFF42A5F5),
     )
     val mNightBackgroundColor = listOf(
-        Color(0xFF272727),
-        Color(0xFF4C4C4C),
-        Color(0xFF908F8F),
-        Color(0xFFBAB9B9),
+        Color(0xFF1C1E2B),
+        Color(0xFF2E323C),
+        Color(0xFF3E424E),
+        Color(0xFF4F555D),
     )
     
 
@@ -120,7 +121,7 @@ class Canvas1Activity : ComponentActivity() {
     val mSunTopShadowColor = Color(0xCCFFFFFF)
     val mSunBottomShadowColor = Color(0x80827717)
 
-    val mMoonColor = Color(0xFF979797)
+    val mMoonColor = Color(0xFFC3C9D1)
     val mMoonTopShadowColor = Color(0xCCFFFFFF)
     val mMoonBottomShadowColor = Color(0xFF5E5E5E)
 
@@ -141,7 +142,7 @@ class Canvas1Activity : ComponentActivity() {
                 .height(mCanvasHeight)
         ) {
             Background(model.progress.value)
-            SunCloud()
+            SunCloud(model.progress.value)
             SunAndMoon(model.progress.value, model.startStatus.value)
         }
     }
@@ -183,7 +184,7 @@ class Canvas1Activity : ComponentActivity() {
 
 
     @Composable
-    fun SunCloud() {
+    fun SunCloud(progress: Float) {
         val cloudOffsetX = (mCanvasWidth - mStarRadius * 1.1f) / 7f
         val cloudOffsetY = mCanvasHeight / 2f / 10f
         val baseOffsetX = -mSunCloudRadius / 5f
@@ -237,44 +238,48 @@ class Canvas1Activity : ComponentActivity() {
 
 
 
-        Canvas(
-            modifier = Modifier
-                .width(mCanvasWidth)
-                .height(mCanvasHeight)
-                .alpha(0.5f)
-                .clip(RoundedCornerShape(mCanvasRadius)),
-        ) {
+        Box(modifier = Modifier.clip(RoundedCornerShape(mCanvasRadius))) {
+            Canvas(
+                modifier = Modifier
+                    .width(mCanvasWidth)
+                    .height(mCanvasHeight)
+                    .offset(y = mCanvasHeight * progress)
+                    .alpha(0.5f)
+                ,
+            ) {
 
-            for (i in 0..6) {
-                drawCircle(
-                    color = cloudColorShadow,
-                    radius = mSunCloudRadius.toPx() * offsetRadius[i] + mSunCloudRadius.toPx() * 0.08f * animationOffsetRadius,
-                    center = Offset(
-                        size.width - cloudOffsetX.toPx() * i + baseOffsetX.toPx() - baseOffsetX.toPx() * shadowOffsetX[i] + size.width * 0.05f * animationOffsetX,
-                        size.height / 2f + cloudOffsetY.toPx() * offsetX[i] + baseOffsetY.toPx() + cloudShadowOffsetY.toPx() * shadowOffsetY[i] + size.height / 2f * 0.05f * animationOffsetY
+                for (i in 0..6) {
+                    drawCircle(
+                        color = cloudColorShadow,
+                        radius = mSunCloudRadius.toPx() * offsetRadius[i] + mSunCloudRadius.toPx() * 0.08f * animationOffsetRadius,
+                        center = Offset(
+                            size.width - cloudOffsetX.toPx() * i + baseOffsetX.toPx() - baseOffsetX.toPx() * shadowOffsetX[i] + size.width * 0.05f * animationOffsetX,
+                            size.height / 2f + cloudOffsetY.toPx() * offsetX[i] + baseOffsetY.toPx() + cloudShadowOffsetY.toPx() * shadowOffsetY[i] + size.height / 2f * 0.05f * animationOffsetY
+                        )
                     )
-                )
+                }
+            }
+
+            Canvas(
+                modifier = Modifier
+                    .width(mCanvasWidth)
+                    .height(mCanvasHeight)
+                    .offset(y = mCanvasHeight * progress)
+                ,
+            ) {
+                for (i in 0..6) {
+                    drawCircle(
+                        color = cloudColor,
+                        radius = mSunCloudRadius.toPx() * offsetRadius[i] + mSunCloudRadius.toPx() * 0.06f * animationOffsetRadius,
+                        center = Offset(
+                            size.width - cloudOffsetX.toPx() * i + baseOffsetX.toPx() + size.width * 0.04f * animationOffsetX,
+                            size.height / 2f + cloudOffsetY.toPx() * offsetX[i] + baseOffsetY.toPx() + size.height / 2f * 0.04f * animationOffsetY
+                        )
+                    )
+                }
             }
         }
 
-
-        Canvas(
-            modifier = Modifier
-                .width(mCanvasWidth)
-                .height(mCanvasHeight)
-                .clip(RoundedCornerShape(mCanvasRadius)),
-        ) {
-            for (i in 0..6) {
-                drawCircle(
-                    color = cloudColor,
-                    radius = mSunCloudRadius.toPx() * offsetRadius[i] + mSunCloudRadius.toPx() * 0.06f * animationOffsetRadius,
-                    center = Offset(
-                        size.width - cloudOffsetX.toPx() * i + baseOffsetX.toPx() + size.width * 0.04f * animationOffsetX,
-                        size.height / 2f + cloudOffsetY.toPx() * offsetX[i] + baseOffsetY.toPx() + size.height / 2f * 0.04f * animationOffsetY
-                    )
-                )
-            }
-        }
     }
 
 
