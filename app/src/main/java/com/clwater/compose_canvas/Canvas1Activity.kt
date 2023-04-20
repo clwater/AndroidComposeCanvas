@@ -14,9 +14,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
-import androidx.compose.material3.Surface
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -67,10 +65,27 @@ class Canvas1Activity : ComponentActivity() {
                                 model.sliderValue.value = it
                             },
                             modifier = Modifier
-                                .padding(horizontal = 10.dp)
-                                .fillMaxSize(),
+                                .padding(horizontal = 20.dp)
+                                .fillMaxWidth(),
                             steps = 100
                         )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(1f),
+                            horizontalArrangement = Arrangement.Center){
+                            Button(
+                                onClick = {
+                                model.startStatus.value = Star.ToMoon
+                                model.sliderValue.value = 0f
+                            }) {
+                                Text("To Moon")
+                            }
+                            Button(onClick = {
+                                model.startStatus.value = Star.ToSun
+                                model.sliderValue.value = 1f
+                            }) {
+                                Text("To Sun")
+                            }
+                        }
                     }
                 }
             }
@@ -85,6 +100,8 @@ class Canvas1Activity : ComponentActivity() {
     val mButtonWidth = mCanvasWidth - mCanvasHeight / 10f * 2
     val mButtonHeight = mCanvasHeight - mCanvasHeight / 10f * 2
     val mSunCloudRadius = mCanvasRadius - mCanvasHeight / 10f
+    val mPerDistance = 0.2f
+
     val mLightBackgroundColor = listOf(
         Color(0xFF1565C0),
         Color(0xFF1E88E5),
@@ -146,12 +163,12 @@ class Canvas1Activity : ComponentActivity() {
                     Star.Moon ->
                         Moon()
                     Star.ToSun ->{
-                        Sun(progress, true)
                         Moon(progress, true)
+                        Sun(progress, true)
                     }
                     Star.ToMoon ->{
-                        Moon(progress, false)
                         Sun(progress, false)
+                        Moon(progress, false)
                     }
                 }
             }
@@ -272,15 +289,15 @@ class Canvas1Activity : ComponentActivity() {
         )
 
         val progressX  = if(reversal){
-            if (progress < 1 / 3f) {
-                -mStarRadius * 2.1f
-            } else if (progress > 2 / 3f) {
-                0.dp
-            } else {
-                mStarRadius * 2.1f * (1 - (progress - 1 / 3f) * 3)
-            }
-        }else {
             0.dp
+        }else {
+                if(progress <= mPerDistance) {
+                    mStarRadius * 2f
+                }else if (progress >= (1 - mPerDistance)){
+                    0.dp
+                } else {
+                    mStarRadius * 2f - mStarRadius * 2f * (progress - mPerDistance) * (1 / (1 - mPerDistance * 2))
+                }
         }
 
         Canvas(
@@ -365,17 +382,16 @@ class Canvas1Activity : ComponentActivity() {
             )
         )
 
-//        val progressX = -mStarRadius * 2f  + mStarRadius * 2f * progress
         val progressX  = if(reversal){
-            0.dp
-        }else{
-            if (progress < 1/ 3f ){
+            if(progress <= mPerDistance) {
                 0.dp
-            }else if (progress > 2 / 3f){
-                -mStarRadius * 2.1f
-            }else{
-                -mStarRadius * 2.1f * (progress - 1/ 3f) * 3
+            }else if (progress >= (1 - mPerDistance)){
+                mStarRadius * 2f
+            } else {
+               -mStarRadius * 2f * (progress - mPerDistance) * (1 / (1 - mPerDistance * 2))
             }
+        }else{
+            0.dp
         }
 
         Canvas(
