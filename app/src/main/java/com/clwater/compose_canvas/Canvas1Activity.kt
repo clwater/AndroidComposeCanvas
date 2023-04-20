@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -26,9 +27,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.clwater.compose_canvas.ui.theme.AndroidComposeCanvasTheme
+import kotlin.random.Random
 
 class Canvas1Activity : ComponentActivity() {
     companion object {
@@ -37,9 +40,37 @@ class Canvas1Activity : ComponentActivity() {
         }
     }
 
+    class NightStar{
+        var x = mutableStateOf(0f)
+        var y = mutableStateOf(0f)
+        var radius = mutableStateOf(0f)
+    }
+
     class Canvas1ViewModel : ViewModel(){
         var progress = mutableStateOf(0f)
         var startStatus = mutableStateOf(Star.ToSun)
+        var nightStar = mutableStateOf(listOf<NightStar>())
+
+    }
+
+    fun getRandom(min: Float, max: Float): Float {
+        return Random.nextFloat() * (max - min) + min
+    }
+
+    fun initNightStart(){
+        val nightStartX: Dp = (mCanvasHeight - mStarRadius * 2f)
+        val nightEndX: Dp = (mCanvasWidth - (mCanvasHeight + mStarRadius * 2f))
+        val nightStartY: Dp = (mCanvasHeight - mStarRadius * 2f)
+        val nightEndY: Dp = (mCanvasHeight - (mCanvasHeight + mStarRadius * 2f))
+        model.nightStar.value = listOf()
+        for (i in 0..10){
+                val star = NightStar()
+                star.x.value = getRandom(nightStartX.value, nightEndX.value)
+                star.y.value = getRandom(nightStartY.value, nightEndY.value)
+                star.radius.value = getRandom(10f, 20f)
+                model.nightStar.value = model.nightStar.value + star
+
+        }
     }
 
     val model by viewModels<Canvas1ViewModel>()
@@ -48,6 +79,7 @@ class Canvas1Activity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        initNightStart()
         setContent {
             AndroidComposeCanvasTheme {
                 // A surface container using the 'background' color from the theme
@@ -143,6 +175,7 @@ class Canvas1Activity : ComponentActivity() {
         ) {
             Background(model.progress.value)
             SunCloud(model.progress.value)
+            NightStarts(model.progress.value)
             SunAndMoon(model.progress.value, model.startStatus.value)
         }
     }
@@ -282,6 +315,60 @@ class Canvas1Activity : ComponentActivity() {
 
     }
 
+    @Composable
+    fun NightStarts(progress: Float) {
+        for (nightStar in model.nightStar.value){
+            NightStart(nightStar, progress)
+        }
+    }
+
+
+    @Composable
+    fun NightStart(nightStar: NightStar, progress: Float){
+
+            val infiniteTransition = rememberInfiniteTransition()
+            val offset by infiniteTransition.animateFloat(
+                initialValue = -1f,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(
+                        durationMillis = 1000,
+                        easing = LinearEasing
+                    ),
+                    repeatMode = RepeatMode.Reverse
+                )
+            )
+
+            val progressX = 0.dp
+//            val progressX  = if(nightStar.reversal){
+//                0.dp
+//            }else {
+//                if(progress <= mPerDistance) {
+//                    mStarRadius * 2f
+//                }else if (progress >= (1 - mPerDistance)){
+//                    0.dp
+//                } else {
+//                    mStarRadius * 2f - mStarRadius * 2f * (progress - mPerDistance) * (1 / (1 - mPerDistance * 2))
+//                }
+//            }
+
+            Canvas(
+                modifier = Modifier
+                    .width(mCanvasWidth)
+                    .height(mCanvasHeight)
+                    .offset(x = progressX)
+                    .offset(y = mCanvasHeight * progress)
+            ) {
+                drawCircle(
+                    color = Color.White,
+                    radius = mStarRadius.toPx(),
+                    center = Offset(
+                        nightStar.x.value,
+                        nightStar.y.value
+                    )
+                )
+            }
+    }
 
 
     @Composable
