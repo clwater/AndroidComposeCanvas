@@ -38,7 +38,7 @@ class Canvas1Activity : ComponentActivity() {
     }
 
     class Canvas1ViewModel : ViewModel(){
-        var sliderValue = mutableStateOf(0f)
+        var progress = mutableStateOf(0f)
         var startStatus = mutableStateOf(Star.ToSun)
     }
 
@@ -59,10 +59,10 @@ class Canvas1Activity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize()
                     ) {
                         Canvas_1()
-                        Slider(value = model.sliderValue.value,
+                        Slider(value = model.progress.value,
                             onValueChange = {
-                                Log.d("gzb", it.toString())
-                                model.sliderValue.value = it
+//                                Log.d("gzb", it.toString())
+                                model.progress.value = it
                             },
                             modifier = Modifier
                                 .padding(horizontal = 20.dp)
@@ -75,13 +75,13 @@ class Canvas1Activity : ComponentActivity() {
                             Button(
                                 onClick = {
                                 model.startStatus.value = Star.ToMoon
-                                model.sliderValue.value = 0f
+                                model.progress.value = 0f
                             }) {
                                 Text("To Moon")
                             }
                             Button(onClick = {
                                 model.startStatus.value = Star.ToSun
-                                model.sliderValue.value = 1f
+                                model.progress.value = 1f
                             }) {
                                 Text("To Sun")
                             }
@@ -107,6 +107,12 @@ class Canvas1Activity : ComponentActivity() {
         Color(0xFF1E88E5),
         Color(0xFF2196F3),
         Color(0xFF42A5F5),
+    )
+    val mNightBackgroundColor = listOf(
+        Color(0xFF272727),
+        Color(0xFF4C4C4C),
+        Color(0xFF908F8F),
+        Color(0xFFBAB9B9),
     )
     
 
@@ -134,9 +140,9 @@ class Canvas1Activity : ComponentActivity() {
                 .width(mCanvasWidth)
                 .height(mCanvasHeight)
         ) {
-            Background()
+            Background(model.progress.value)
             SunCloud()
-            SunAndMoon(model.sliderValue.value, model.startStatus.value)
+            SunAndMoon(model.progress.value, model.startStatus.value)
         }
     }
 
@@ -460,8 +466,30 @@ class Canvas1Activity : ComponentActivity() {
         }
     }
 
+    private fun offsetColor(colorStart: Color, colorEnd: Color, progress: Float): Color {
+
+        val offsetColor = if (progress < mPerDistance){
+            0f
+        }else if (progress > (1 - mPerDistance)){
+            1f
+        }else{
+            (progress - mPerDistance) * (1 / (1 - mPerDistance * 2))
+        }
+        val red = (((colorStart.red +  (colorEnd.red - colorStart.red) * offsetColor) *  0xFF).toInt())
+        val green = (((colorStart.green +  (colorEnd.green - colorStart.green) * offsetColor) *  0xFF).toInt())
+        val blue = (((colorStart.blue +  (colorEnd.blue - colorStart.blue) * offsetColor) *  0xFF).toInt())
+        val color = ((0xFF and 0xFF) shl 24) or
+                ((red and 0xFF) shl 16) or
+                ((green and 0xFF) shl 8) or
+                (blue and 0xFF)
+        return Color(color)
+
+    }
+
     @Composable
-    fun Background() {
+    fun Background(progress: Float) {
+        val backgroundMove = mCanvasWidth - (mCanvasHeight - mStarRadius * 2f) - mStarRadius * 2
+        val offsetX = (mCanvasHeight - mStarRadius * 2f) / 2f + backgroundMove * progress + mStarRadius
         Canvas(
             modifier = Modifier
                 .width(mCanvasWidth)
@@ -473,27 +501,31 @@ class Canvas1Activity : ComponentActivity() {
                 val minRadius = maxRadius * 0.3f
 
                 drawCircle(
-                    color = mLightBackgroundColor[0],
-                    radius = maxRadius * 1.1f,
-                    center = Offset(mSunCloudRadius.toPx() * 1.5f, mCanvasHeight.toPx() / 2f)
+                    color = offsetColor(mLightBackgroundColor[0], mNightBackgroundColor[0], progress),
+                    radius = maxRadius * 1.2f,
+                    center = Offset(offsetX.toPx(),
+                        mCanvasHeight.toPx() / 2f)
                 )
 
                 drawCircle(
-                    color = mLightBackgroundColor[1],
+                    color = offsetColor(mLightBackgroundColor[1], mNightBackgroundColor[1], progress),
                     radius = minRadius + (maxRadius - minRadius) / 7f * 4f,
-                    center = Offset(mSunCloudRadius.toPx() * 1.5f, mCanvasHeight.toPx() / 2f)
+                    center = Offset(offsetX.toPx(),
+                        mCanvasHeight.toPx() / 2f)
                 )
 
                 drawCircle(
-                    color = mLightBackgroundColor[2],
+                    color = offsetColor(mLightBackgroundColor[2], mNightBackgroundColor[2], progress),
                     radius = minRadius + (maxRadius - minRadius) / 7f * 2f,
-                    center = Offset(mSunCloudRadius.toPx() * 1.5f, mCanvasHeight.toPx() / 2f)
+                    center = Offset(offsetX.toPx(),
+                         mCanvasHeight.toPx() / 2f)
                 )
 
                 drawCircle(
-                    color = mLightBackgroundColor[3],
+                    color = offsetColor(mLightBackgroundColor[3], mNightBackgroundColor[3], progress),
                     radius = minRadius,
-                    center = Offset(mSunCloudRadius.toPx() * 1.5f, mCanvasHeight.toPx() / 2f)
+                    center = Offset(offsetX.toPx(),
+                        mCanvasHeight.toPx() / 2f)
                 )
             }
         )
