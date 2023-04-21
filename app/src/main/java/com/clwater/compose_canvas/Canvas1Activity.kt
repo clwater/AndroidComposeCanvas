@@ -156,6 +156,7 @@ class Canvas1Activity : ComponentActivity() {
     
 
     val mSunColor = Color(0xFFFFD54F)
+    val mSunColorDeep = Color(0xFFFFA726)
     val mSunTopShadowColor = Color(0xCCFFFFFF)
     val mSunBottomShadowColor = Color(0x80827717)
 
@@ -165,8 +166,6 @@ class Canvas1Activity : ComponentActivity() {
     val mMoonDownColor = Color(0xFF73777E)
 
     val mStarRadius = mSunCloudRadius * 0.9f
-
-    val mCommonBackgroundColor = Color.Gray
 
     val mStarMove = mCanvasWidth - (mCanvasHeight - mStarRadius * 2f) - mStarRadius * 2f
 
@@ -592,6 +591,18 @@ class Canvas1Activity : ComponentActivity() {
             )
         )
 
+        val animationOffsetSun by infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = 5000,
+                    easing = LinearEasing
+                ),
+                repeatMode = RepeatMode.Reverse
+            )
+        )
+
         val progressX  = if(reversal){
             if(progress <= mPerDistance) {
                 0.dp
@@ -638,7 +649,7 @@ class Canvas1Activity : ComponentActivity() {
             }
 
             drawCircle(
-                color = mSunColor,
+                color = offsetColor(mSunColor, mSunColorDeep, animationOffsetSun),
                 radius = mStarRadius.toPx() * 1.05f,
                 center = Offset(
                     size.width / 2f + mStarRadius.toPx() * 0.05f + mStarRadius.toPx() * 0.005f * offset
@@ -733,33 +744,6 @@ class Canvas1Activity : ComponentActivity() {
                 )
             }
         )
-    }
-
-
-    fun getBitmapCircle(radius: Int, color: Color): Bitmap {
-        val bitmap = Bitmap.createBitmap(
-            radius * 2,
-            radius * 2,
-            Bitmap.Config.ARGB_8888
-        )
-        val canvas = Canvas(bitmap)
-        val paint = Paint()
-        paint.color = color.toArgb()
-        canvas.drawCircle(radius.toFloat(), radius.toFloat(), radius.toFloat(), paint)
-
-        return bitmap
-    }
-
-    // 怎样将Canvas转换为Bitmap
-// 代码
-//    val bitmap = Bitmap.createBitmap(
-//        mCanvasWidth.toInt(),
-//        mCanvasHeight.toInt(),
-//        Bitmap.Config.ARGB_8888
-//    )
-    fun DrawScope.drawSunTopShadow() {
-        val centerX = mStarRadius + mCanvasHeight - mStarRadius * 2f
-        val centerY = mCanvasHeight / 2f
     }
 
 }
