@@ -3,12 +3,7 @@ package com.clwater.compose_canvas
 import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.Paint.Style
 import android.os.Bundle
-import android.util.Log
 import android.view.animation.DecelerateInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -26,17 +21,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.animation.addListener
 import androidx.core.animation.doOnEnd
 import androidx.lifecycle.ViewModel
 import com.clwater.compose_canvas.ui.theme.AndroidComposeCanvasTheme
-import java.util.UUID
 import kotlin.random.Random
 
 
@@ -47,7 +38,11 @@ class Canvas1Activity : ComponentActivity() {
         }
     }
 
+    /**
+     * Night Star Info
+     */
     class NightStar{
+        // position and radius
         var x = mutableStateOf(0f)
         var y = mutableStateOf(0f)
         var radius = mutableStateOf(0f)
@@ -55,6 +50,9 @@ class Canvas1Activity : ComponentActivity() {
         var status = mutableStateOf(NightStarStatus.Start)
     }
 
+    /**
+     * Night Star Status
+     */
     enum class NightStarStatus{
         Start,
         End,
@@ -68,14 +66,6 @@ class Canvas1Activity : ComponentActivity() {
 
     }
 
-    private fun getRandom(min: Float, max: Float): Float {
-        return Random.nextFloat() * (max - min) + min
-    }
-
-    private fun getRandom(min: Int, max: Int): Long {
-        return (Random.nextFloat() * (max - min) + min).toLong()
-    }
-
 
     val model by viewModels<Canvas1ViewModel>()
 
@@ -83,7 +73,6 @@ class Canvas1Activity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        initNightStart()
         setContent {
             AndroidComposeCanvasTheme {
                 // A surface container using the 'background' color from the theme
@@ -99,7 +88,6 @@ class Canvas1Activity : ComponentActivity() {
                         Canvas_1()
                         Slider(value = model.progress.value,
                             onValueChange = {
-//                                Log.d("gzb", it.toString())
                                 model.progress.value = it
                             },
                             modifier = Modifier
@@ -506,45 +494,60 @@ class Canvas1Activity : ComponentActivity() {
             with(drawContext.canvas.nativeCanvas) {
                 val checkPoint = saveLayer(null, null)
                 drawCircle(
+                    color = mMoonColor,
+                    radius = mStarRadius.toPx() * 1.05f,
+                    center = Offset(
+                        size.width / 2f + mStarRadius.toPx() * 0.05f + mStarRadius.toPx() * 0.005f * offset
+                                + progressX.toPx(),
+                        size.height / 2f + mStarRadius.toPx() * 0.1f + mStarRadius.toPx() * 0.005f * offset
+                    ),
+                )
+                drawCircle(
                     color = mMoonDownColor,
                     radius = mStarRadius.toPx() / 3f,
                     center = Offset(size.width / 2f - height / 4f + size.width * offsetMoonDown - size.width,
-                        size.height / 5f * 3f)
+                        size.height / 5f * 3f),
+                    blendMode = BlendMode.SrcIn
 
                 )
                 drawCircle(
                     color = mMoonDownColor,
                     radius = mStarRadius.toPx() / 3f,
                     center = Offset(size.width / 2f - height / 4f + size.width * offsetMoonDown,
-                        size.height / 5f * 3f)
+                        size.height / 5f * 3f),
+                    blendMode = BlendMode.SrcIn
                 )
-
+//
                 drawCircle(
                     color = mMoonDownColor,
                     radius = mStarRadius.toPx() / 4f,
                     center = Offset(size.width / 2f + height / 6f + size.width * offsetMoonDown - size.width,
-                        size.height / 4f * 1f)
+                        size.height / 4f * 1f),
+                    blendMode = BlendMode.SrcIn
                 )
 
                 drawCircle(
                     color = mMoonDownColor,
                     radius = mStarRadius.toPx() / 4f,
                     center = Offset(size.width / 2f + height / 6f + size.width * offsetMoonDown,
-                        size.height / 4f * 1f)
+                        size.height / 4f * 1f),
+                    blendMode = BlendMode.SrcIn
                 )
 
                 drawCircle(
                     color = mMoonDownColor,
                     radius = mStarRadius.toPx() / 4f,
                     center = Offset(size.width / 2f + height / 8f + size.width * offsetMoonDown - size.width,
-                        size.height / 4f * 3f)
+                        size.height / 4f * 3f),
+                    blendMode = BlendMode.SrcIn
                 )
 
                 drawCircle(
                     color = mMoonDownColor,
                     radius = mStarRadius.toPx() / 4f,
                     center = Offset(size.width / 2f + height / 8f + size.width * offsetMoonDown,
-                        size.height / 4f * 3f)
+                        size.height / 4f * 3f),
+                    blendMode = BlendMode.SrcIn
                 )
 
 
@@ -553,14 +556,16 @@ class Canvas1Activity : ComponentActivity() {
                     color = mMoonDownColor,
                     radius = mStarRadius.toPx() / 6f,
                     center = Offset( height / 8f + size.width * offsetMoonDown - size.width,
-                        size.height / 5f * 1f)
+                        size.height / 5f * 1f),
+                    blendMode = BlendMode.SrcIn
                 )
 
                 drawCircle(
                     color = mMoonDownColor,
                     radius = mStarRadius.toPx() / 6f,
                     center = Offset( height / 8f + size.width * offsetMoonDown,
-                        size.height / 5f * 1f)
+                        size.height / 5f * 1f),
+                    blendMode = BlendMode.SrcIn
                 )
 
 
@@ -762,4 +767,11 @@ class Canvas1Activity : ComponentActivity() {
         )
     }
 
+    private fun getRandom(min: Float, max: Float): Float {
+        return Random.nextFloat() * (max - min) + min
+    }
+
+    private fun getRandom(min: Int, max: Int): Long {
+        return (Random.nextFloat() * (max - min) + min).toLong()
+    }
 }
