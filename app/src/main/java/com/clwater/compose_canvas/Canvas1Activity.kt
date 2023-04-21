@@ -76,21 +76,6 @@ class Canvas1Activity : ComponentActivity() {
         return (Random.nextFloat() * (max - min) + min).toLong()
     }
 
-    fun initNightStart(){
-        val nightStartX: Dp = (mCanvasHeight - mStarRadius * 2f)
-        val nightEndX: Dp = (mCanvasWidth - (mCanvasHeight + mStarRadius * 2f))
-        val nightStartY: Dp = (mCanvasHeight - mStarRadius * 2f)
-        val nightEndY: Dp = (mCanvasHeight - (mCanvasHeight + mStarRadius * 2f))
-        model.nightStar = mutableStateListOf()
-        for (i in 0..10){
-                val star = NightStar()
-                star.x.value = getRandom(nightStartX.value, nightEndX.value)
-                star.y.value = getRandom(nightStartY.value, nightEndY.value)
-                star.radius.value = getRandom(10f, 20f)
-                model.nightStar.add(star)
-
-        }
-    }
 
     val model by viewModels<Canvas1ViewModel>()
 
@@ -177,6 +162,7 @@ class Canvas1Activity : ComponentActivity() {
     val mMoonColor = Color(0xFFC3C9D1)
     val mMoonTopShadowColor = Color(0xCCFFFFFF)
     val mMoonBottomShadowColor = Color(0xFF5E5E5E)
+    val mMoonDownColor = Color(0xFF73777E)
 
     val mStarRadius = mSunCloudRadius * 0.9f
 
@@ -435,6 +421,18 @@ class Canvas1Activity : ComponentActivity() {
             )
         )
 
+        val offsetMoonDown by infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = 5000,
+                    easing = LinearEasing
+                ),
+                repeatMode = RepeatMode.Restart
+            )
+        )
+
         val progressX  = if(reversal){
             0.dp
         }else {
@@ -489,6 +487,71 @@ class Canvas1Activity : ComponentActivity() {
                     size.height / 2f + mStarRadius.toPx() * 0.1f + mStarRadius.toPx() * 0.005f * offset
                 ),
             )
+
+            with(drawContext.canvas.nativeCanvas) {
+                val checkPoint = saveLayer(null, null)
+                drawCircle(
+                    color = mMoonDownColor,
+                    radius = mStarRadius.toPx() / 3f,
+                    center = Offset(size.width / 2f - height / 4f + size.width * offsetMoonDown - size.width,
+                        size.height / 5f * 3f)
+
+                )
+                drawCircle(
+                    color = mMoonDownColor,
+                    radius = mStarRadius.toPx() / 3f,
+                    center = Offset(size.width / 2f - height / 4f + size.width * offsetMoonDown,
+                        size.height / 5f * 3f)
+                )
+
+                drawCircle(
+                    color = mMoonDownColor,
+                    radius = mStarRadius.toPx() / 4f,
+                    center = Offset(size.width / 2f + height / 6f + size.width * offsetMoonDown - size.width,
+                        size.height / 4f * 1f)
+                )
+
+                drawCircle(
+                    color = mMoonDownColor,
+                    radius = mStarRadius.toPx() / 4f,
+                    center = Offset(size.width / 2f + height / 6f + size.width * offsetMoonDown,
+                        size.height / 4f * 1f)
+                )
+
+                drawCircle(
+                    color = mMoonDownColor,
+                    radius = mStarRadius.toPx() / 4f,
+                    center = Offset(size.width / 2f + height / 8f + size.width * offsetMoonDown - size.width,
+                        size.height / 4f * 3f)
+                )
+
+                drawCircle(
+                    color = mMoonDownColor,
+                    radius = mStarRadius.toPx() / 4f,
+                    center = Offset(size.width / 2f + height / 8f + size.width * offsetMoonDown,
+                        size.height / 4f * 3f)
+                )
+
+
+
+                drawCircle(
+                    color = mMoonDownColor,
+                    radius = mStarRadius.toPx() / 6f,
+                    center = Offset( height / 8f + size.width * offsetMoonDown - size.width,
+                        size.height / 5f * 1f)
+                )
+
+                drawCircle(
+                    color = mMoonDownColor,
+                    radius = mStarRadius.toPx() / 6f,
+                    center = Offset( height / 8f + size.width * offsetMoonDown,
+                        size.height / 5f * 1f)
+                )
+
+
+                restoreToCount(checkPoint)
+            }
+
 
             with(drawContext.canvas.nativeCanvas) {
                 val checkPoint = saveLayer(null, null)
