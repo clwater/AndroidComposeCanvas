@@ -83,9 +83,14 @@ class Canvas1Activity : ComponentActivity() {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.White)
+                            .background(Color.White),
+                        verticalArrangement = Arrangement.Center,
                     ) {
-                        Canvas_1()
+                        Row(
+                            modifier = Modifier.fillMaxWidth(1f),
+                            horizontalArrangement = Arrangement.Center){
+                            Canvas_1()
+                        }
                         Slider(value = model.progress.value,
                             onValueChange = {
                                 model.progress.value = it
@@ -102,6 +107,19 @@ class Canvas1Activity : ComponentActivity() {
                                 onClick = {
                                 model.startStatus.value = Star.ToMoon
                                 model.progress.value = 0f
+                                    val valueAnimator = ValueAnimator.ofFloat(0f, 1f)
+                                    valueAnimator.duration = 1000
+                                    valueAnimator.interpolator = DecelerateInterpolator()
+                                    valueAnimator.addUpdateListener {
+                                        val value = it.animatedValue as Float
+                                        model.progress.value = value
+                                    }
+                                    valueAnimator.addListener {
+                                        it.doOnEnd {
+                                            model.startStatus.value = Star.Moon
+                                        }
+                                    }
+                                    valueAnimator.start()
                             }) {
                                 Text("To Moon")
                             }
@@ -109,6 +127,19 @@ class Canvas1Activity : ComponentActivity() {
                             Button(onClick = {
                                 model.startStatus.value = Star.ToSun
                                 model.progress.value = 1f
+                                val valueAnimator = ValueAnimator.ofFloat(1f, 0f)
+                                valueAnimator.duration = 1000
+                                valueAnimator.interpolator = DecelerateInterpolator()
+                                valueAnimator.addUpdateListener {
+                                    val value = it.animatedValue as Float
+                                    model.progress.value = value
+                                }
+                                valueAnimator.addListener {
+                                    it.doOnEnd {
+                                        model.startStatus.value = Star.Sun
+                                    }
+                                }
+                                valueAnimator.start()
                             }) {
                                 Text("To Sun")
                             }
@@ -120,11 +151,9 @@ class Canvas1Activity : ComponentActivity() {
     }
 
 
-    val mCanvasWidth = 240.dp
-    val mCanvasHeight = 100.dp
+    val mCanvasWidth = 160.dp
+    val mCanvasHeight = 60.dp
     val mCanvasRadius = mCanvasHeight / 2f
-    val mShadowWidth = mCanvasHeight / 9f
-    val mButtonWidth = mCanvasWidth - mCanvasHeight / 10f * 2
     val mButtonHeight = mCanvasHeight - mCanvasHeight / 10f * 2
     val mSunCloudRadius = mCanvasRadius - mCanvasHeight / 10f
     val mPerDistance = 0.2f
@@ -163,7 +192,6 @@ class Canvas1Activity : ComponentActivity() {
     fun Canvas_1() {
         Box(
             modifier = Modifier
-                .padding(top = 100.dp, start = 100.dp)
                 .width(mCanvasWidth)
                 .height(mCanvasHeight)
         ) {
@@ -724,6 +752,41 @@ class Canvas1Activity : ComponentActivity() {
 
     @Composable
     fun Background(progress: Float) {
+        val infiniteTransition = rememberInfiniteTransition()
+        val offset1 by infiniteTransition.animateFloat(
+            initialValue = 0.95f,
+            targetValue = 1.05f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = getRandom(3000, 5000).toInt(),
+                    easing = LinearEasing
+                ),
+                repeatMode = RepeatMode.Reverse
+            )
+        )
+        val offset2 by infiniteTransition.animateFloat(
+            initialValue = 0.9f,
+            targetValue = 1.1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = getRandom(5000, 7000).toInt(),
+                    easing = LinearEasing
+                ),
+                repeatMode = RepeatMode.Reverse
+            )
+        )
+        val offset3 by infiniteTransition.animateFloat(
+            initialValue = 0.85f,
+            targetValue = 1.15f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = getRandom(1000, 10000).toInt(),
+                    easing = LinearEasing
+                ),
+                repeatMode = RepeatMode.Reverse
+            )
+        )
+
         val backgroundMove = mCanvasWidth - (mCanvasHeight - mStarRadius * 2f) - mStarRadius * 2
         val offsetX = (mCanvasHeight - mStarRadius * 2f) / 2f + backgroundMove * progress + mStarRadius
         Canvas(
@@ -745,21 +808,21 @@ class Canvas1Activity : ComponentActivity() {
 
                 drawCircle(
                     color = offsetColor(mLightBackgroundColor[1], mNightBackgroundColor[1], progress),
-                    radius = minRadius + (maxRadius - minRadius) / 7f * 4f,
+                    radius = (minRadius + (maxRadius - minRadius) / 7f * 4f)  * offset1,
                     center = Offset(offsetX.toPx(),
                         mCanvasHeight.toPx() / 2f)
                 )
 
                 drawCircle(
                     color = offsetColor(mLightBackgroundColor[2], mNightBackgroundColor[2], progress),
-                    radius = minRadius + (maxRadius - minRadius) / 7f * 2f,
+                    radius = (minRadius + (maxRadius - minRadius) / 7f * 2f)  * offset2,
                     center = Offset(offsetX.toPx(),
                          mCanvasHeight.toPx() / 2f)
                 )
 
                 drawCircle(
                     color = offsetColor(mLightBackgroundColor[3], mNightBackgroundColor[3], progress),
-                    radius = minRadius,
+                    radius = minRadius * offset3,
                     center = Offset(offsetX.toPx(),
                         mCanvasHeight.toPx() / 2f)
                 )
