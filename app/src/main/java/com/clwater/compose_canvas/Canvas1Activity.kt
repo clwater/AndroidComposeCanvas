@@ -275,14 +275,20 @@ class Canvas1Activity : ComponentActivity() {
             )
         )
 
-
+        val progressY = if (progress < mPerDistance){
+            0f
+        }else if (progress > (1f - mPerDistance)){
+            1f
+        }else{
+            (progress - mPerDistance) / (1f - mPerDistance * 2f)
+        }
 
         Box(modifier = Modifier.clip(RoundedCornerShape(mCanvasRadius))) {
             Canvas(
                 modifier = Modifier
                     .width(mCanvasWidth)
                     .height(mCanvasHeight)
-                    .offset(y = mCanvasHeight * progress)
+                    .offset(y = mCanvasHeight * progressY)
                     .alpha(0.5f),
             ) {
 
@@ -302,7 +308,7 @@ class Canvas1Activity : ComponentActivity() {
                 modifier = Modifier
                     .width(mCanvasWidth)
                     .height(mCanvasHeight)
-                    .offset(y = mCanvasHeight * progress),
+                    .offset(y = mCanvasHeight * progressY),
             ) {
                 for (i in 0..6) {
                     drawCircle(
@@ -337,8 +343,18 @@ class Canvas1Activity : ComponentActivity() {
                 model.nightStar.add(getRandomStart())
             }
         }
+
+        val progressY = if (progress < mPerDistance){
+            0f
+        }else if (progress > (1f - mPerDistance)){
+            1f
+        }else{
+            (progress - mPerDistance) / (1f - mPerDistance * 2f)
+        }
+
+
         for (nightStar in model.nightStar){
-            NightStart(nightStar, progress)
+            NightStart(nightStar, progressY)
         }
     }
 
