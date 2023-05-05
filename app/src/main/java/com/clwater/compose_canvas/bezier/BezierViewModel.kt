@@ -10,27 +10,47 @@ import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 
 class BezierViewModel : ViewModel() {
+    // max Bezier point size
     var mIndex = mutableStateOf(3)
+
+    // animation time
     var mTime = mutableStateOf(3)
+
+    // Bezier points(User input)
     var mBezierPoints = mutableStateListOf<BezierPoint>()
+
+    // Bezier points for draw(Parent and Child points)
     var mBezierDrawPoints = mutableStateListOf(mutableListOf<BezierPoint>())
+
+    // Bezier line progress
     var mProgress = mutableStateOf(0f)
+
+    // Bezier line points for draw(real Bezier line points)
     var mBezierLinePoints = mutableStateMapOf(Pair(0f, Pair(0f, 0f)))
+
+    // in change mode for change position
     var mInChange = mutableStateOf(false)
+
+    // in auxiliary mode for draw auxiliary line
     var mInAuxiliary = mutableStateOf(true)
+
+    // in more mode for add more point
     var mInMore = mutableStateOf(false)
+
+    // current choose for change position
+    private var bezierPoint: BezierPoint? = null
 
     val mIndexRange = Pair(2, 15)
     val mTimeRange = Pair(1, 10)
 
-    // 点层级字符集
-    val mCharSequence = listOf(
+    // deep point text
+    private val mCharSequence = listOf(
         "P",
         "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"
     )
 
-    // 辅助线颜色集
-    val mColorSequence = listOf(
+    // deep line colors
+    private val mColorSequence = listOf(
         0xff000000,
         0xff1BFFF8,
         0xff17FF89,
@@ -48,6 +68,9 @@ class BezierViewModel : ViewModel() {
         0xffAAFFEC
     )
 
+    /**
+     * add point for user input
+     */
     fun addPoint(x: Float, y: Float) {
         val pointSize = mBezierPoints.size
         if (pointSize < mIndex.value || mInMore.value) {
@@ -65,6 +88,9 @@ class BezierViewModel : ViewModel() {
         mBezierDrawPoints.add(mBezierPoints)
     }
 
+    /**
+     * clear all info
+     */
     fun clear() {
         mBezierPoints.clear()
         mBezierDrawPoints.clear()
@@ -72,6 +98,9 @@ class BezierViewModel : ViewModel() {
         mProgress.value = 0f
     }
 
+    /**
+     * start animation
+     */
     fun start() {
         val process = ValueAnimator.ofFloat(0f, 1f)
         process.addUpdateListener {
@@ -86,12 +115,18 @@ class BezierViewModel : ViewModel() {
         set.start()
     }
 
+    /**
+     * calculate Bezier points
+     */
     fun calculate() {
         mBezierDrawPoints.clear()
         mBezierDrawPoints.add(mBezierPoints)
         calculateBezierPoint(0, mBezierPoints.toList())
     }
 
+    /**
+     * calculate Bezier line points
+     */
     private fun calculateBezierPoint(deep: Int, parentList: List<BezierPoint>) {
         if (parentList.size > 1) {
             val childList = mutableListOf<BezierPoint>()
@@ -121,7 +156,9 @@ class BezierViewModel : ViewModel() {
         }
     }
 
-    var bezierPoint: BezierPoint? = null
+    /**
+     * change point position start, check if have point in range
+     */
     fun pointDragStart(position: Offset) {
         if (!mInChange.value) {
             return
@@ -137,10 +174,16 @@ class BezierViewModel : ViewModel() {
         }
     }
 
+    /**
+     * change point position end
+     */
     fun pointDragEnd() {
         bezierPoint = null
     }
 
+    /**
+     * change point position progress
+     */
     fun pointDragProgress(drag: Offset) {
         if (!mInChange.value || bezierPoint == null) {
             return
@@ -159,12 +202,6 @@ class BezierViewModel : ViewModel() {
         }
     }
 
-    private fun clearWithOutBasePoint() {
-        mBezierDrawPoints.clear()
-        mBezierLinePoints.clear()
-        mProgress.value = 0f
-    }
-
     fun changeMore() {
         clear()
         mInMore.value = !mInMore.value
@@ -175,5 +212,14 @@ class BezierViewModel : ViewModel() {
 
     fun changeAuxiliary() {
         mInAuxiliary.value = !mInAuxiliary.value
+    }
+
+    /**
+     * clear all info without base point
+     */
+    private fun clearWithOutBasePoint() {
+        mBezierDrawPoints.clear()
+        mBezierLinePoints.clear()
+        mProgress.value = 0f
     }
 }

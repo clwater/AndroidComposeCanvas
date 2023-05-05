@@ -16,7 +16,6 @@ import com.clwater.compose_canvas.ui.theme.AndroidComposeCanvasTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        BezierActivity.start(this@MainActivity)
         super.onCreate(savedInstanceState)
         setContent {
             AndroidComposeCanvasTheme {
