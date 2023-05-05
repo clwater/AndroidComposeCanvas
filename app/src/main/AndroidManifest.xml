@@ -22,7 +22,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Canvas1Activity"/>
+        <activity android:name=".sun_moon.Canvas1Activity"/>
+        <activity android:name=".bezier.BezierActivity"/>
     </application>
 
 </manifest>

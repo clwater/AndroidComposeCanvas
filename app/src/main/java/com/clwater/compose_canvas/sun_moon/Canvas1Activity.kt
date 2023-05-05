@@ -1,4 +1,4 @@
-package com.clwater.compose_canvas
+package com.clwater.compose_canvas.sun_moon
 
 import android.animation.ValueAnimator
 import android.content.Context

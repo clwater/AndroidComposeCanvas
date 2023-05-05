@@ -10,10 +10,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.clwater.compose_canvas.bezier.BezierActivity
+import com.clwater.compose_canvas.sun_moon.Canvas1Activity
 import com.clwater.compose_canvas.ui.theme.AndroidComposeCanvasTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        BezierActivity.start(this@MainActivity)
         super.onCreate(savedInstanceState)
         setContent {
             AndroidComposeCanvasTheme {
@@ -28,6 +31,10 @@ class MainActivity : ComponentActivity() {
                     ) {
                         Button(onClick = { Canvas1Activity.start(this@MainActivity) }) {
                             Text(text = "Sun Moon")
+                        }
+
+                        Button(onClick = { BezierActivity.start(this@MainActivity) }) {
+                            Text(text = "Bezier")
                         }
                     }
                 }
