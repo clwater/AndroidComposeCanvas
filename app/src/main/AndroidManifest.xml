@@ -24,6 +24,7 @@
         </activity>
         <activity android:name=".sun_moon.Canvas1Activity"/>
         <activity android:name=".bezier.BezierActivity"/>
+        <activity android:name=".clap.ClapActivity"/>
     </application>
 
 </manifest>
