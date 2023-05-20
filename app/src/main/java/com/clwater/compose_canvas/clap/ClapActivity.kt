@@ -10,10 +10,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -31,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -54,7 +59,7 @@ class ClapActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Clap(45)
+                    Clap(3)
                 }
             }
         }
@@ -62,9 +67,6 @@ class ClapActivity : ComponentActivity() {
 
     @Composable
     fun TopTips(clapCount: Int) {
-        if (clapCount == 0) {
-            return
-        }
 
         var showTopTips by remember {
             mutableStateOf(true)
@@ -76,11 +78,15 @@ class ClapActivity : ComponentActivity() {
             showTopTips = false
         }
 
-        AnimatedVisibility(visible = showTopTips) {
-            if (clapCount > mMaxClap) {
-                Text(text = "clapCount: $mMaxClap")
-            } else {
-                Text(text = "clapCount: $clapCount")
+        if (showTopTips){
+            Box(modifier = Modifier.background(color = Color.Black, shape = RoundedCornerShape(100.dp))) {
+                val showCount =
+                if (clapCount > mMaxClap) {
+                    "+$mMaxClap"
+                } else {
+                    "+$clapCount"
+                }
+                Text(text = showCount, modifier = Modifier.padding(10.dp).align(Alignment.Center), color = Color.White)
             }
         }
     }
@@ -114,12 +120,14 @@ class ClapActivity : ComponentActivity() {
         }
 
         LaunchedEffect(inTouch) {
-            if (false) {
+            if (!inTouch) {
                 return@LaunchedEffect
             }
-            delay(100)
-            Log.d("clwater", "inTouch")
-            inTouch = false
+            while (true) {
+                delay(300)
+                clapCount++
+                Log.d("clwater", "inTouch")
+            }
         }
 
         Scaffold(
@@ -134,7 +142,9 @@ class ClapActivity : ComponentActivity() {
                         alignment = Alignment.CenterHorizontally
                     )
                 ) {
-                    TopTips(clapCount)
+                    if (clapCount != startClapCount) {
+                        TopTips(clapCount)
+                    }
                     Image(
                         painter = if (showFill) {
                             painterResource(id = R.drawable.icon_hand_fill)
@@ -151,9 +161,11 @@ class ClapActivity : ComponentActivity() {
                                         clapCount++
                                         inTouch = true
                                     }
+
                                     MotionEvent.ACTION_UP -> {
                                         inTouch = false
                                     }
+
                                     else -> false
                                 }
                                 true
