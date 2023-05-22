@@ -1,13 +1,17 @@
 package com.clwater.compose_canvas.clap
 
+import android.animation.TimeInterpolator
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
+import android.view.animation.AnticipateOvershootInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.Easing
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -36,10 +40,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.core.animation.addListener
 import com.clwater.compose_canvas.R
 import com.clwater.compose_canvas.ui.theme.AndroidComposeCanvasTheme
 import kotlinx.coroutines.delay
@@ -122,20 +128,56 @@ class ClapActivity : ComponentActivity() {
             mutableStateOf(false)
         }
 
+        var scale by remember {
+            mutableStateOf(1f)
+        }
+
+        var inAnimator by remember {
+            mutableStateOf(false)
+        }
+
+        val animator = ValueAnimator.ofFloat(1f, 0.95f, 1.1f, 1f).apply {
+            duration = 700
+            repeatCount = 0
+            addUpdateListener {
+                scale = it.animatedValue as Float
+            }
+            interpolator = AnticipateOvershootInterpolator()
+        }
+        animator.addListener(onEnd = {
+            Log.d("gzb", "animator is END")
+            if (inTouch) {
+                animator.start()
+            } else {
+                inAnimator = false
+            }
+        })
+
         LaunchedEffect(clapCount) {
             if (clapCount > 0) {
                 showFill = true
             }
         }
 
+        LaunchedEffect(inAnimator) {
+            if (!inAnimator) {
+                return@LaunchedEffect
+            }
+            if (!animator.isStarted && !animator.isRunning && inTouch) {
+                animator.start()
+            }
+        }
+
         LaunchedEffect(inTouch) {
             if (!inTouch) {
                 return@LaunchedEffect
+            } else {
+                clapCount++
             }
             while (true) {
+                inAnimator = true
                 delay(300)
                 clapCount++
-                Log.d("clwater", "inTouch")
             }
         }
 
@@ -169,12 +211,12 @@ class ClapActivity : ComponentActivity() {
                         contentDescription = "Hand",
 
                         modifier = Modifier
+                            .scale(scale)
                             .size(100.dp)
                             .align(Alignment.CenterHorizontally)
                             .pointerInteropFilter {
                                 when (it.action) {
                                     MotionEvent.ACTION_DOWN -> {
-                                        clapCount++
                                         inTouch = true
                                     }
 
@@ -191,5 +233,10 @@ class ClapActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    fun TimeInterpolator.toEasing() = Easing {
+            x ->
+        getInterpolation(x)
     }
 }
