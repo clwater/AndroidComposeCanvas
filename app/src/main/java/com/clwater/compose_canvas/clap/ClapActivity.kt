@@ -8,13 +8,14 @@ import android.util.Log
 import android.view.MotionEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -67,7 +68,6 @@ class ClapActivity : ComponentActivity() {
 
     @Composable
     fun TopTips(clapCount: Int) {
-
         var showTopTips by remember {
             mutableStateOf(true)
         }
@@ -78,15 +78,24 @@ class ClapActivity : ComponentActivity() {
             showTopTips = false
         }
 
-        if (showTopTips){
-            Box(modifier = Modifier.background(color = Color.Black, shape = RoundedCornerShape(100.dp))) {
+        if (showTopTips) {
+            Box(
+                modifier = Modifier.background(
+                    color = Color.Black,
+                    shape = RoundedCornerShape(100.dp)
+                )
+            ) {
                 val showCount =
-                if (clapCount > mMaxClap) {
-                    "+$mMaxClap"
-                } else {
-                    "+$clapCount"
-                }
-                Text(text = showCount, modifier = Modifier.padding(10.dp).align(Alignment.Center), color = Color.White)
+                    if (clapCount > mMaxClap) {
+                        "+$mMaxClap"
+                    } else {
+                        "+$clapCount"
+                    }
+                Text(
+                    text = showCount,
+                    modifier = Modifier.padding(10.dp).align(Alignment.Center),
+                    color = Color.White
+                )
             }
         }
     }
@@ -141,9 +150,15 @@ class ClapActivity : ComponentActivity() {
                     modifier = Modifier.align(
                         alignment = Alignment.CenterHorizontally
                     )
+                        .fillMaxWidth()
                 ) {
-                    if (clapCount != startClapCount) {
-                        TopTips(clapCount)
+                    Box(
+                        modifier = Modifier.height(50.dp)
+                            .align(Alignment.CenterHorizontally)
+                    ) {
+                        if (clapCount != startClapCount) {
+                            TopTips(clapCount)
+                        }
                     }
                     Image(
                         painter = if (showFill) {
@@ -155,6 +170,7 @@ class ClapActivity : ComponentActivity() {
 
                         modifier = Modifier
                             .size(100.dp)
+                            .align(Alignment.CenterHorizontally)
                             .pointerInteropFilter {
                                 when (it.action) {
                                     MotionEvent.ACTION_DOWN -> {
