@@ -12,6 +12,7 @@ import android.view.animation.AnticipateOvershootInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.Easing
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,8 +42,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -101,6 +106,39 @@ class ClapActivity : ComponentActivity() {
                     text = showCount,
                     modifier = Modifier.padding(10.dp).align(Alignment.Center),
                     color = Color.White
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun ClapFlower() {
+        val offsetRotate = 0f
+        val flowersWidth = 50.dp
+        val flowersHeight = 50.dp
+
+        for (i in 0..4) {
+            val childRotate = offsetRotate + i * 72
+            val offsetX = flowersWidth / 2f * Math.sin(Math.toRadians(i * 72.0)).toFloat()
+            val offsetY = flowersHeight / 2f * Math.cos(Math.toRadians(i * 72.0)).toFloat()
+            Canvas(
+                Modifier.rotate(childRotate).offset(
+                    flowersWidth + offsetX,
+                    flowersHeight + offsetY
+                )
+            ) {
+                drawCircle(
+                    color = Color(0xFF59A5B3),
+                    radius = 10f,
+                    center = Offset(0f, 0f)
+                )
+                val tripPath = Path()
+                tripPath.moveTo(10f, -50f)
+                tripPath.lineTo(20f, -15f)
+                tripPath.lineTo(30f, -50f)
+                drawPath(
+                    path = tripPath,
+                    color = Color(0xFFF29394)
                 )
             }
         }
@@ -202,34 +240,39 @@ class ClapActivity : ComponentActivity() {
                             TopTips(clapCount)
                         }
                     }
-                    Image(
-                        painter = if (showFill) {
-                            painterResource(id = R.drawable.icon_hand_fill)
-                        } else {
-                            painterResource(id = R.drawable.icon_hand_outline)
-                        },
-                        contentDescription = "Hand",
-
+                    Box(
                         modifier = Modifier
-                            .scale(scale)
-                            .size(100.dp)
                             .align(Alignment.CenterHorizontally)
-                            .pointerInteropFilter {
-                                when (it.action) {
-                                    MotionEvent.ACTION_DOWN -> {
-                                        inTouch = true
-                                    }
+                    ) {
+                        ClapFlower()
+                        Image(
+                            painter = if (showFill) {
+                                painterResource(id = R.drawable.icon_hand_fill)
+                            } else {
+                                painterResource(id = R.drawable.icon_hand_outline)
+                            },
+                            contentDescription = "Hand",
 
-                                    MotionEvent.ACTION_UP -> {
-                                        inTouch = false
-                                    }
+                            modifier = Modifier
+                                .scale(scale)
+                                .size(100.dp)
+                                .pointerInteropFilter {
+                                    when (it.action) {
+                                        MotionEvent.ACTION_DOWN -> {
+                                            inTouch = true
+                                        }
 
-                                    else -> false
+                                        MotionEvent.ACTION_UP -> {
+                                            inTouch = false
+                                        }
+
+                                        else -> false
+                                    }
+                                    true
                                 }
-                                true
-                            }
 
-                    )
+                        )
+                    }
                 }
             }
         }
