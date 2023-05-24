@@ -11,7 +11,9 @@ import android.view.MotionEvent
 import android.view.animation.AnticipateOvershootInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Easing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -32,16 +34,11 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
@@ -53,7 +50,11 @@ import androidx.compose.ui.unit.dp
 import androidx.core.animation.addListener
 import com.clwater.compose_canvas.R
 import com.clwater.compose_canvas.ui.theme.AndroidComposeCanvasTheme
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.random.Random
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class ClapActivity : ComponentActivity() {
     companion object {
@@ -113,29 +114,43 @@ class ClapActivity : ComponentActivity() {
 
     @Composable
     fun ClapFlower() {
-        val offsetRotate = 0f
-        val flowersWidth = 50.dp
-        val flowersHeight = 50.dp
+        var offsetRotate = 0
+        val flowersWidth = 100.dp
+        val flowersHeight = 100.dp
+
+        SideEffect {
+            offsetRotate = Random(System.currentTimeMillis()).nextInt(0, 72)
+        }
+        val alpha = remember {
+            Animatable(0f)
+        }
+
+        LaunchedEffect(alpha) {
+            launch {
+                alpha.animateTo(1f, animationSpec = tween(300))
+            }
+        }
 
         for (i in 0..4) {
-            val childRotate = offsetRotate + i * 72
-            val offsetX = flowersWidth / 2f * Math.sin(Math.toRadians(i * 72.0)).toFloat()
-            val offsetY = flowersHeight / 2f * Math.cos(Math.toRadians(i * 72.0)).toFloat()
+            val childRotate = i * 72.0 + offsetRotate
+            val offsetX = flowersWidth / 2f * 1.1f * sin(Math.toRadians(childRotate)).toFloat()
+            val offsetY = flowersHeight / 2f * 1.1f * cos(Math.toRadians(childRotate)).toFloat()
             Canvas(
-                Modifier.rotate(childRotate).offset(
-                    flowersWidth + offsetX,
-                    flowersHeight + offsetY
-                )
+                Modifier.offset(
+                    flowersWidth / 2f + offsetX,
+                    flowersHeight / 2f + offsetY
+                ).rotate(-childRotate.toFloat())
+                    .alpha(alpha.value)
             ) {
                 drawCircle(
                     color = Color(0xFF59A5B3),
                     radius = 10f,
-                    center = Offset(0f, 0f)
+                    center = Offset(10f, 0f)
                 )
                 val tripPath = Path()
-                tripPath.moveTo(10f, -50f)
-                tripPath.lineTo(20f, -15f)
-                tripPath.lineTo(30f, -50f)
+                tripPath.moveTo(0f, 40f)
+                tripPath.lineTo(-10f, 5f)
+                tripPath.lineTo(-20f, 40f)
                 drawPath(
                     path = tripPath,
                     color = Color(0xFFF29394)
@@ -174,6 +189,10 @@ class ClapActivity : ComponentActivity() {
             mutableStateOf(false)
         }
 
+        var showFlowers by remember {
+            mutableStateOf(false)
+        }
+
         val animator = ValueAnimator.ofFloat(1f, 0.95f, 1.1f, 1f).apply {
             duration = 700
             repeatCount = 0
@@ -194,6 +213,13 @@ class ClapActivity : ComponentActivity() {
         LaunchedEffect(clapCount) {
             if (clapCount > 0) {
                 showFill = true
+            }
+            showFlowers = true
+            showFlowers = try {
+                delay(300)
+                false
+            } catch (e: Exception) {
+                false
             }
         }
 
@@ -243,8 +269,11 @@ class ClapActivity : ComponentActivity() {
                     Box(
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
+                            .size(100.dp)
                     ) {
-                        ClapFlower()
+                        if (showFlowers) {
+                            ClapFlower()
+                        }
                         Image(
                             painter = if (showFill) {
                                 painterResource(id = R.drawable.icon_hand_fill)
