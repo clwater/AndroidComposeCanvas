@@ -69,94 +69,8 @@ class ClapActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Clap(3)
+                    Clap()
                 }
-            }
-        }
-    }
-
-    @Composable
-    fun TopTips(clapCount: Int) {
-        var showTopTips by remember {
-            mutableStateOf(true)
-        }
-
-        LaunchedEffect(clapCount) {
-            showTopTips = true
-            delay(1000)
-            showTopTips = false
-        }
-
-        if (showTopTips) {
-            Box(
-                modifier = Modifier.background(
-                    color = Color.Black,
-                    shape = RoundedCornerShape(100.dp)
-                )
-            ) {
-                val showCount =
-                    if (clapCount > mMaxClap) {
-                        "+$mMaxClap"
-                    } else {
-                        "+$clapCount"
-                    }
-                Text(
-                    text = showCount,
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .align(Alignment.Center),
-                    color = Color.White
-                )
-            }
-        }
-    }
-
-    @Composable
-    fun ClapFlower() {
-        val offsetRotate = Random(System.currentTimeMillis()).nextInt(0, 72)
-        val flowersWidth = 100.dp
-        val flowersHeight = 100.dp
-
-        val alpha = remember {
-            Animatable(0f)
-        }
-        val distance = remember {
-            Animatable(-1f)
-        }
-
-        LaunchedEffect(Unit) {
-            launch {
-                alpha.animateTo(1f, animationSpec = tween(300))
-                distance.animateTo(1f, animationSpec = tween(200))
-                delay(700)
-                alpha.animateTo(0f, animationSpec = tween(300))
-            }
-        }
-
-        for (i in 0..4) {
-            val childRotate = i * 72.0 + offsetRotate
-            val offsetX = flowersWidth / 2f * 1.1f * sin(Math.toRadians(childRotate)).toFloat()
-            val offsetY = flowersHeight / 2f * 1.1f * cos(Math.toRadians(childRotate)).toFloat()
-            Canvas(
-                Modifier.offset(
-                    flowersWidth / 2f + offsetX,
-                    flowersHeight / 2f + offsetY
-                ).rotate(-childRotate.toFloat())
-                    .alpha(alpha.value)
-            ) {
-                drawCircle(
-                    color = Color(0xFF59A5B3),
-                    radius = 10f,
-                    center = Offset(10f, 0f + flowersWidth.toPx() / 20f * distance.value)
-                )
-                val tripPath = Path()
-                tripPath.moveTo(0f, 40f + flowersWidth.toPx() / 20f * distance.value)
-                tripPath.lineTo(-10f, 5f + flowersWidth.toPx() / 20f * distance.value)
-                tripPath.lineTo(-20f, 40f + flowersWidth.toPx() / 20f * distance.value)
-                drawPath(
-                    path = tripPath,
-                    color = Color(0xFFF29394)
-                )
             }
         }
     }
@@ -167,8 +81,10 @@ class ClapActivity : ComponentActivity() {
     )
     @Composable
     fun Clap(startClapCount: Int = 0) {
+        var isInit by remember {
+            mutableStateOf(false)
+        }
         val snackbarHostState = SnackbarHostState()
-        val scope = rememberCoroutineScope()
 
         var showFill by remember {
             mutableStateOf(false)
@@ -262,7 +178,9 @@ class ClapActivity : ComponentActivity() {
                             .align(Alignment.CenterHorizontally)
                             .size(100.dp)
                     ) {
-                        ClapFlowers(clapCount - startClapCount + 3)
+                        if (isInit) {
+                            ClapFlowers(clapCount - startClapCount + 3)
+                        }
                         Image(
                             painter = if (showFill) {
                                 painterResource(id = R.drawable.icon_hand_fill)
@@ -277,6 +195,9 @@ class ClapActivity : ComponentActivity() {
                                 .pointerInteropFilter {
                                     when (it.action) {
                                         MotionEvent.ACTION_DOWN -> {
+                                            if (!isInit) {
+                                                isInit = true
+                                            }
                                             inTouch = true
                                         }
 
@@ -292,6 +213,42 @@ class ClapActivity : ComponentActivity() {
                         )
                     }
                 }
+            }
+        }
+    }
+
+    @Composable
+    fun TopTips(clapCount: Int) {
+        var showTopTips by remember {
+            mutableStateOf(true)
+        }
+
+        LaunchedEffect(clapCount) {
+            showTopTips = true
+            delay(1000)
+            showTopTips = false
+        }
+
+        if (showTopTips) {
+            Box(
+                modifier = Modifier.background(
+                    color = Color.Black,
+                    shape = RoundedCornerShape(100.dp)
+                )
+            ) {
+                val showCount =
+                    if (clapCount > mMaxClap) {
+                        "+$mMaxClap"
+                    } else {
+                        "+$clapCount"
+                    }
+                Text(
+                    text = showCount,
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .align(Alignment.Center),
+                    color = Color.White
+                )
             }
         }
     }
@@ -341,6 +298,56 @@ class ClapActivity : ComponentActivity() {
         }
         if (flower_show_2) {
             ClapFlower()
+        }
+    }
+
+    @Composable
+    fun ClapFlower() {
+        val offsetRotate = Random(System.currentTimeMillis()).nextInt(0, 72)
+        val flowersWidth = 100.dp
+        val flowersHeight = 100.dp
+
+        val alpha = remember {
+            Animatable(0f)
+        }
+        val distance = remember {
+            Animatable(-1f)
+        }
+
+        LaunchedEffect(Unit) {
+            launch {
+                alpha.animateTo(1f, animationSpec = tween(300))
+                distance.animateTo(1f, animationSpec = tween(200))
+                delay(700)
+                alpha.animateTo(0f, animationSpec = tween(300))
+            }
+        }
+
+        for (i in 0..4) {
+            val childRotate = i * 72.0 + offsetRotate
+            val offsetX = flowersWidth / 2f * 1.1f * sin(Math.toRadians(childRotate)).toFloat()
+            val offsetY = flowersHeight / 2f * 1.1f * cos(Math.toRadians(childRotate)).toFloat()
+            Canvas(
+                Modifier.offset(
+                    flowersWidth / 2f + offsetX,
+                    flowersHeight / 2f + offsetY
+                ).rotate(-childRotate.toFloat())
+                    .alpha(alpha.value)
+            ) {
+                drawCircle(
+                    color = Color(0xFF59A5B3),
+                    radius = 10f,
+                    center = Offset(10f, 0f + flowersWidth.toPx() / 20f * distance.value)
+                )
+                val tripPath = Path()
+                tripPath.moveTo(0f, 40f + flowersWidth.toPx() / 20f * distance.value)
+                tripPath.lineTo(-10f, 5f + flowersWidth.toPx() / 20f * distance.value)
+                tripPath.lineTo(-20f, 40f + flowersWidth.toPx() / 20f * distance.value)
+                drawPath(
+                    path = tripPath,
+                    color = Color(0xFFF29394)
+                )
+            }
         }
     }
 }
