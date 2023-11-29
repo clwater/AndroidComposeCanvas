@@ -44,6 +44,21 @@ import androidx.compose.ui.unit.dp
 import com.clwater.compose_canvas.ui.theme.AndroidComposeCanvasTheme
 import kotlin.random.Random
 
+
+enum class TreeType {
+    TREE,
+    FLOWER,
+    FRUIT,
+}
+
+data class TreeNode(
+    var level: Int = 0,
+    var range: Float = 0f,
+    var type: TreeType = TreeType.TREE,
+    var child: List<TreeNode> = listOf(),
+)
+
+
 class TreeActivity : ComponentActivity() {
     companion object {
         fun start(context: Context) {
@@ -61,9 +76,6 @@ class TreeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
-
-
         setContent {
             AndroidComposeCanvasTheme {
                 // A surface container using the 'background' color from the theme
@@ -75,6 +87,37 @@ class TreeActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    fun genNewTrees(seed: Int){
+
+    }
+
+    fun genNewTree(deep: Int) : TreeNode{
+        val treeNode = TreeNode()
+
+        var currentType = TreeType.TREE
+        if (deep == 8){
+            currentType  = TreeType.FLOWER
+        }else if (deep > 5){
+            if (Random(System.currentTimeMillis()).nextInt(9) > (9 - deep)){
+                currentType = TreeType.FLOWER
+            }
+        }
+
+        if (currentType == TreeType.FLOWER){
+            if (Random(System.currentTimeMillis()).nextInt(10) > 8){
+                currentType = TreeType.FRUIT
+            }
+        }
+
+
+
+        treeNode.level = deep
+        treeNode.type = currentType
+
+
+        return treeNode
     }
 
     @Composable
