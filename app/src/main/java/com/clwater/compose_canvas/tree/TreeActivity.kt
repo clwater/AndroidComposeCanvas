@@ -3,7 +3,6 @@ package com.clwater.compose_canvas.tree
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.LinearEasing
@@ -40,27 +39,34 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.RadialGradient
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.clwater.compose_canvas.ui.theme.AndroidComposeCanvasTheme
 import java.util.ArrayDeque
 import java.util.Queue
+import kotlin.math.cos
+import kotlin.math.sin
 import kotlin.random.Random
 
 
+// Tree Node Type
 enum class TreeType {
     TREE,
     FLOWER,
     FRUIT,
 }
 
+// data Class TreeNode
 data class TreeNode(
     var deep: Int = 0,
     var angle: Float = 0f,
     var type: TreeType = TreeType.TREE,
     var child: List<TreeNode> = listOf(),
+
+    var length: Dp = 0.dp,
+
+    // Increased in a loop rather than recursively
     var startOffset: Offset = Offset(0f, 0f)
 )
 
@@ -71,31 +77,22 @@ class TreeActivity : ComponentActivity() {
             context.startActivity(Intent(context, TreeActivity::class.java))
         }
 
-        val cloudColor_1 = Color(0xFFF5F5F5)
-        val cloudColor_2 = Color(0xFFF5F5F5)
+        // const Color
+        val cloudColor = Color(0xFFF5F5F5)
         val skyColor = Color(0xFF9dbeb7)
         val landColor = Color(0xFF2a574d)
         val treeColor = Color(0xFF412e1f)
         val flowerColor = Color(0xFFFFFFFF)
         val fruitColor = Color(0xFFe66e4a)
         val fruitColorEnd = Color(0x1AE66E4A)
-        const val maxDeep = 8
 
-        val deepLengthPer = mutableMapOf(
-            1 to 7f / 9f,
-            2 to 7f / 18f,
-            3 to 1f / 3f,
-            4 to 1f / 3f,
-            5 to 1f / 3f,
-            6 to 1f / 3f,
-            7 to 1f / 3f,
-            8 to 1f / 3f,
-
-            )
     }
 
-    private var mBaseCircle = 0.dp
     private lateinit var random: Random
+
+    private var mBaseCircle = 0.dp
+    private var flowerCount = 0
+    private var minLength: Float = 0.0f
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -114,49 +111,45 @@ class TreeActivity : ComponentActivity() {
         }
     }
 
-    fun genNewTrees(seed: Int): TreeNode {
+    // Generate new Mei Tree
+    private fun genNewTrees(seed: Int): TreeNode {
         random = Random(seed)
         val treeNode = TreeNode()
         treeNode.angle = 0f
         treeNode.deep = 0
         treeNode.type = TreeType.TREE
-        treeNode.child += genNewTree(1)
+        treeNode.length = mBaseCircle / 4f
+
+        for (i in 0 until random.nextInt(3) + 1) {
+            treeNode.child += genNewTree(1, treeNode.length)
+        }
         return treeNode
     }
 
-    private fun genNewTree(deep: Int): TreeNode {
+    // recursively new tree node
+    private fun genNewTree(deep: Int, length: Dp): TreeNode {
         val treeNode = TreeNode()
 
-        var currentType = TreeType.TREE
-        if (deep == maxDeep - 1) {
-            currentType = TreeType.FLOWER
-        } else if (deep > maxDeep - 3) {
-            if (random.nextInt(maxDeep) > (maxDeep - deep)) {
-                currentType = TreeType.FLOWER
-            }
-        }
-
-        if (currentType == TreeType.FLOWER) {
-            if (random.nextInt(maxDeep * maxDeep * maxDeep) < maxDeep) {
-                currentType = TreeType.FRUIT
-            }
-        }
-
         treeNode.deep = deep
-        treeNode.type = currentType
 
-        val angleRange = 90 + deep * (180 / maxDeep)
-        treeNode.angle = -angleRange / 2f + random.nextInt(angleRange)
-        if (currentType == TreeType.TREE) {
-            var childCount = random.nextInt(deep + 1) + 1
-            if (childCount > 3) {
-                childCount = 3
+        if (length < minLength.dp) {
+            flowerCount++
+            treeNode.type = if (flowerCount % 100 == 0) {
+                TreeType.FRUIT
+            } else {
+                TreeType.FLOWER
             }
-            for (i in 0 until childCount) {
-                treeNode.child += genNewTree(deep + 1)
-            }
+            return treeNode
         }
 
+        treeNode.type = TreeType.TREE
+
+        treeNode.length = length * (random.nextInt(2) / 10f + 0.6f)
+        treeNode.angle =
+            (if (random.nextFloat() > 0.5f) 1f else -1f) * (random.nextInt(20 + deep * 5) + 45)
+        for (i in 0 until random.nextInt(3) + 1) {
+            treeNode.child += genNewTree(deep + 1, treeNode.length)
+        }
 
         return treeNode
     }
@@ -172,6 +165,7 @@ class TreeActivity : ComponentActivity() {
         }
 
         random = Random(seed)
+        minLength = mBaseCircle.value / 40f
 
         Column {
             Box(
@@ -193,20 +187,16 @@ class TreeActivity : ComponentActivity() {
                     seed = random.nextInt(1000)
                 }) {
                     Text(
-                        text = "tree",
+                        text = "Generate New Tree",
                     )
                 }
             }
-
-
         }
-
 
     }
 
     @Composable
     fun TreeCanvas(seed: Int) {
-        Log.d("gzb", "mScreenWidth: $mBaseCircle")
         Box(
             modifier = Modifier
                 .width(mBaseCircle)
@@ -216,36 +206,18 @@ class TreeActivity : ComponentActivity() {
             contentAlignment = Alignment.Center
         ) {
             TreeLand()
-//            Cloud_2()
-//            Cloud_1()
+            Cloud_2()
+            Cloud_1()
             Tree(seed)
-            Text(text = "$seed")
-
-
         }
 
     }
 
     @Composable
     fun Tree(seed: Int) {
-        val infiniteTransition = rememberInfiniteTransition()
-        val offset by infiniteTransition.animateFloat(
-            initialValue = -0.8f,
-            targetValue = 0.8f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(
-                    durationMillis = 5007,
-                    easing = LinearEasing,
-                ),
-                repeatMode = RepeatMode.Reverse,
-            ),
-        )
 
         val tree = genNewTrees(seed)
-
-
-        val baseTreeLength = mBaseCircle / 4.5f
-
+        val baseTreeLength = mBaseCircle / 4f
         Canvas(
             modifier = Modifier
                 .width(mBaseCircle)
@@ -265,39 +237,31 @@ class TreeActivity : ComponentActivity() {
             val fruitQueue: Queue<TreeNode> = ArrayDeque()
 
 
-
             for (treeNode in tree.child) {
                 treeNode.startOffset = Offset(0f, -baseTreeLength.toPx() - mBaseCircle.toPx() / 20f)
                 treeQueue.offer(treeNode)
             }
 
+            // Increased in a loop rather than recursively
             while (treeQueue.isNotEmpty()) {
                 val treeNode = treeQueue.poll() ?: break
                 val angle = treeNode.angle
                 val deep = treeNode.deep
                 val type = treeNode.type
-
+                val length = treeNode.length
 
                 if (type == TreeType.TREE) {
-
-                    Log.d("gzb", "deep: $deep, angle: $angle")
-
-
-                    val _deepLengthPer = deepLengthPer[deep]
-                    var currentLength =
-                        baseTreeLength * _deepLengthPer!! + -baseTreeLength * _deepLengthPer / 4f + random.nextInt(
-                            (baseTreeLength * _deepLengthPer / 2f).toPx().toInt()
-                        ).toDp()
-                    if (type != TreeType.TREE) {
-                        currentLength = currentLength / 3f * 2
+                    var treeWidth = 15f
+                    for (i in 0..deep) {
+                        treeWidth *= 0.8f
                     }
-                    val treeWidth = 10 - deep
 
+                    // calculate the position for child node
                     val startOffset = treeNode.startOffset
                     val currentEnd = Offset(
-                        x = startOffset.x + currentLength.toPx() * Math.sin(Math.toRadians(angle.toDouble()))
+                        x = startOffset.x + length.toPx() * sin(Math.toRadians(angle.toDouble()))
                             .toFloat(),
-                        y = startOffset.y - currentLength.toPx() * Math.cos(Math.toRadians(angle.toDouble()))
+                        y = startOffset.y - length.toPx() * cos(Math.toRadians(angle.toDouble()))
                             .toFloat(),
                     )
 
@@ -305,15 +269,15 @@ class TreeActivity : ComponentActivity() {
                         color = treeColor,
                         start = startOffset,
                         end = currentEnd,
-                        strokeWidth = treeWidth.toFloat(),
+                        strokeWidth = treeWidth,
                     )
-                    for (treeNode: TreeNode in treeNode.child) {
-                        treeNode.startOffset = currentEnd
-                        treeQueue.offer(treeNode)
+                    treeNode.child.forEach {
+                        it.startOffset = currentEnd
+                        treeQueue.offer(it)
                     }
                 }
 
-
+                // offer the flower/fruit child to queue
                 if (type == TreeType.FLOWER) {
                     flowerQueue.offer(treeNode)
                 } else if (type == TreeType.FRUIT) {
@@ -321,6 +285,7 @@ class TreeActivity : ComponentActivity() {
                 }
             }
 
+            // draw flowers
             while (flowerQueue.isNotEmpty()) {
                 val treeNode = flowerQueue.poll() ?: break
                 drawCircle(
@@ -352,11 +317,6 @@ class TreeActivity : ComponentActivity() {
     }
 
     @Composable
-    fun CanvasTree() {
-
-    }
-
-    @Composable
     fun Cloud_1() {
         val infiniteTransition = rememberInfiniteTransition()
         val offset by infiniteTransition.animateFloat(
@@ -384,18 +344,18 @@ class TreeActivity : ComponentActivity() {
         )
         {
             drawRoundRect(
-                color = cloudColor_1,
+                color = cloudColor,
                 size = Size(width = size.width / 7f * 4f, height = size.height / 4f),
                 cornerRadius = CornerRadius(size.minDimension / 2f),
                 topLeft = Offset(x = center.x - size.width / 4f, y = center.y),
             )
             drawCircle(
-                color = cloudColor_1,
+                color = cloudColor,
                 radius = size.minDimension / 10f,
                 center = Offset(x = center.x - size.width / 20f, y = center.y + size.height / 40f),
             )
             drawCircle(
-                color = cloudColor_1,
+                color = cloudColor,
                 radius = size.minDimension / 8f,
                 center = Offset(x = center.x + size.width / 10f, y = center.y + size.height / 40f),
             )
@@ -430,18 +390,18 @@ class TreeActivity : ComponentActivity() {
         )
         {
             drawRoundRect(
-                color = cloudColor_1,
+                color = cloudColor,
                 size = Size(width = size.width / 7f * 6f, height = size.height / 4f * 1.25f),
                 cornerRadius = CornerRadius(size.minDimension / 2f),
                 topLeft = Offset(x = center.x - size.width / 2f, y = center.y),
             )
             drawCircle(
-                color = cloudColor_1,
+                color = cloudColor,
                 radius = size.minDimension / 6f,
                 center = Offset(x = center.x - size.width / 5f, y = center.y + size.height / 40f),
             )
             drawCircle(
-                color = cloudColor_1,
+                color = cloudColor,
                 radius = size.minDimension / 5f,
                 center = Offset(x = center.x + size.width / 10f, y = center.y + size.height / 40f),
             )
