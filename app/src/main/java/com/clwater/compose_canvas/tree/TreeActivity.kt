@@ -15,13 +15,16 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -34,11 +37,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -55,6 +60,13 @@ enum class TreeType {
     TREE,
     FLOWER,
     FRUIT,
+}
+
+enum class Season {
+    Spring,
+    Summer,
+    Autumn,
+    Winter,
 }
 
 // data Class TreeNode
@@ -79,13 +91,24 @@ class TreeActivity : ComponentActivity() {
 
         // const Color
         val cloudColor = Color(0xFFF5F5F5)
-        val skyColor = Color(0xFF9dbeb7)
-        val landColor = Color(0xFF2a574d)
         val treeColor = Color(0xFF412e1f)
         val flowerColor = Color(0xFFFFFFFF)
         val fruitColor = Color(0xFFe66e4a)
         val fruitColorEnd = Color(0x1AE66E4A)
+        val seasonSpring = Color(0xFF7FDF69)
+        val seasonSummer = Color(0xFFEE4F4F)
+        val seasonAutumn = Color(0xFFE6A23C)
+        val seasonWinter = Color(0xFFB8CAC6)
 
+        val skyColorSpring = Color(0xFF69ADA3)
+        val landColorSpring = Color(0xFF59C255)
+        val rainColor = Color(0x99CCD5CC)
+        val skyColorSummer = Color(0xFF4D59AF)
+        val landColorSummer = Color(0xFF1E1F44)
+        val skyColorAutumn = Color(0xFFFAC164)
+        val landColorAutumn = Color(0xFF612D1C)
+        val skyColorWinter = Color(0xFF9dbeb7)
+        val landColorWinter = Color(0xFFE7EEEC)
     }
 
     private lateinit var random: Random
@@ -160,6 +183,10 @@ class TreeActivity : ComponentActivity() {
             mBaseCircle = resources.displayMetrics.widthPixels.toFloat().toDp() * 0.9f
         }
 
+        var season by remember {
+            mutableStateOf(Season.Spring)
+        }
+
         var seed by remember {
             mutableStateOf(-1)
         }
@@ -174,15 +201,11 @@ class TreeActivity : ComponentActivity() {
                     .fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                TreeCanvas(seed)
+                TreeCanvas(seed, season)
             }
 
-            Box(
-                modifier = Modifier
-                    .height(200.dp)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
+
+            Column {
                 Button(onClick = {
                     seed = random.nextInt(1000)
                 }) {
@@ -190,31 +213,190 @@ class TreeActivity : ComponentActivity() {
                         text = "Generate New Tree",
                     )
                 }
+                Column(
+                    modifier = Modifier.padding(vertical = 4.dp)
+                ) {
+                    Row {
+                        Button(
+                            onClick = {
+                                season = Season.Spring
+                            },
+                            modifier = Modifier
+                                .weight(1f),
+                            colors = ButtonDefaults.textButtonColors(
+                                containerColor = if (season == Season.Spring) {
+                                    seasonSpring
+                                } else {
+                                    MaterialTheme.colorScheme.primary
+                                },
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text(
+                                text = "Spring",
+                            )
+                        }
+
+                        Button(
+                            onClick = {
+                                season = Season.Summer
+                            },
+                            modifier = Modifier
+                                .weight(1f),
+                            colors = ButtonDefaults.textButtonColors(
+                                containerColor = if (season == Season.Summer) {
+                                    seasonSummer
+                                } else {
+                                    MaterialTheme.colorScheme.primary
+                                },
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text(
+                                text = "Summer",
+                            )
+                        }
+                    }
+
+
+                    Row {
+                        Button(
+                            onClick = {
+                                season = Season.Autumn
+                            },
+                            modifier = Modifier
+                                .weight(1f),
+                            colors = ButtonDefaults.textButtonColors(
+                                containerColor = if (season == Season.Autumn) {
+                                    seasonAutumn
+                                } else {
+                                    MaterialTheme.colorScheme.primary
+                                },
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text(
+                                text = "Autumn",
+                            )
+                        }
+
+                        Button(
+                            onClick = {
+                                season = Season.Winter
+                            },
+                            modifier = Modifier
+                                .weight(1f),
+                            colors = ButtonDefaults.textButtonColors(
+                                containerColor = if (season == Season.Winter) {
+                                    seasonWinter
+                                } else {
+                                    MaterialTheme.colorScheme.primary
+                                },
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text(
+                                text = "Winter",
+                            )
+                        }
+                    }
+
+
+                }
+
             }
+
         }
 
     }
 
     @Composable
-    fun TreeCanvas(seed: Int) {
+    fun TreeCanvas(seed: Int, season: Season) {
         Box(
             modifier = Modifier
                 .width(mBaseCircle)
                 .height(mBaseCircle)
                 .clip(CircleShape)
-                .background(skyColor),
+                .background(
+                    when (season) {
+                        Season.Spring -> skyColorSpring
+                        Season.Summer -> skyColorSummer
+                        Season.Autumn -> skyColorAutumn
+                        Season.Winter -> skyColorWinter
+                    }
+                ),
             contentAlignment = Alignment.Center
         ) {
-            TreeLand()
-            Cloud_2()
-            Cloud_1()
-            Tree(seed)
+            when(season){
+                Season.Spring -> {
+                    SpringRain(seed)
+                }
+                Season.Autumn -> {
+                    Cloud_1()
+                    Cloud_2()
+                }
+                else -> {}
+            }
+            TreeLand(season)
+
+            Tree(seed, season)
         }
 
     }
 
     @Composable
-    fun Tree(seed: Int) {
+    private fun SpringRain(seed: Int) {
+        val infiniteTransition = rememberInfiniteTransition()
+        val offset by infiniteTransition.animateFloat(
+            initialValue = -1f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = 4000,
+                    easing = LinearEasing,
+                ),
+                repeatMode = RepeatMode.Restart,
+            ),
+        )
+        val maxRains = 100
+        val rainOffset = mutableMapOf<Int, Offset>()
+
+        for(index in 0 until maxRains){
+            rainOffset[index] = Offset(
+                x = - 2f * mBaseCircle.value  +  4f * random.nextInt(mBaseCircle.value.toInt()),
+                y = - 1f * mBaseCircle.value  +  2f * random.nextInt(mBaseCircle.value.toInt())
+            )
+        }
+
+        Canvas(
+            modifier = Modifier
+                .width(mBaseCircle)
+                .height(mBaseCircle)
+                .offset(mBaseCircle / 2f , mBaseCircle / 2f)
+                .rotate(10f)
+                .graphicsLayer {
+//                    translationY  = mBaseCircle.toPx() / 2f * offset
+                }
+            ,
+
+            ) {
+            for(i in -2 .. 2){
+                for (j in 0 until maxRains) {
+                    drawRoundRect(
+                        color = rainColor,
+                        size = Size(mBaseCircle.toPx() / 400f, mBaseCircle.toPx() / 20f),
+                        cornerRadius = CornerRadius(size.minDimension / 2f),
+                        topLeft = Offset(x = rainOffset[j]!!.x ,
+                            y = mBaseCircle.value * offset + i *  mBaseCircle.value + rainOffset[j]!!.y
+                        ),
+                    )
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun Tree(seed: Int, season: Season) {
 
         val tree = genNewTrees(seed)
         val baseTreeLength = mBaseCircle / 4f
@@ -409,7 +591,7 @@ class TreeActivity : ComponentActivity() {
     }
 
     @Composable
-    fun TreeLand() {
+    fun TreeLand(season: Season) {
         Canvas(
             modifier = Modifier
                 .width(mBaseCircle)
@@ -417,7 +599,12 @@ class TreeActivity : ComponentActivity() {
                 .offset(y = mBaseCircle / 4f * 3),
         ) {
             drawCircle(
-                color = landColor,
+                color = when (season) {
+                    Season.Spring -> landColorSpring
+                    Season.Summer -> landColorSummer
+                    Season.Autumn -> landColorAutumn
+                    Season.Winter -> landColorWinter
+                },
                 radius = size.minDimension / 2f
             )
         }
