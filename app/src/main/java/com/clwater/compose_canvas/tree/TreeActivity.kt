@@ -29,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +49,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.clwater.compose_canvas.ui.theme.AndroidComposeCanvasTheme
+import kotlinx.coroutines.delay
 import java.util.ArrayDeque
 import java.util.Queue
 import kotlin.math.cos
@@ -329,7 +331,8 @@ class TreeActivity : ComponentActivity() {
         ) {
             when(season){
                 Season.Spring -> {
-                    SpringRain(seed)
+                    SpringRain()
+                    Light()
                 }
                 Season.Autumn -> {
                     Cloud_1()
@@ -339,13 +342,45 @@ class TreeActivity : ComponentActivity() {
             }
             TreeLand(season)
 
-            Tree(seed, season)
+//            Tree(seed, season)
         }
 
     }
 
     @Composable
-    private fun SpringRain(seed: Int) {
+    fun Light() {
+        var showLight by remember {
+            mutableStateOf(true)
+        }
+//        LaunchedEffect(Unit) {
+//            while (true) {
+//                delay(3000)
+//                showLight = true
+//                delay(1000)
+//                showLight = false
+//            }
+//        }
+
+        if (showLight) {
+            Canvas(
+                modifier = Modifier
+                    .width(mBaseCircle)
+                    .height(mBaseCircle)
+                    .offset(mBaseCircle / 2f, mBaseCircle / 2f)
+
+            ) {
+
+                drawCircle(color = Color.Red,
+                    radius = 10f,
+                    center = Offset(x = 0f, y = 0f)
+                )
+            }
+        }
+
+    }
+
+    @Composable
+    private fun SpringRain() {
         val infiniteTransition = rememberInfiniteTransition()
         val offset by infiniteTransition.animateFloat(
             initialValue = -1f,
@@ -372,7 +407,7 @@ class TreeActivity : ComponentActivity() {
             modifier = Modifier
                 .width(mBaseCircle)
                 .height(mBaseCircle)
-                .offset(mBaseCircle / 2f , mBaseCircle / 2f)
+                .offset(mBaseCircle / 2f, mBaseCircle / 2f)
                 .rotate(10f)
                 .graphicsLayer {
 //                    translationY  = mBaseCircle.toPx() / 2f * offset
