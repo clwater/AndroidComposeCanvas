@@ -354,6 +354,7 @@ class TreeActivity : ComponentActivity() {
 
                 Season.Summer -> {
                     Starts(seed)
+                    Meteor()
                 }
 
                 else -> {}
@@ -363,6 +364,74 @@ class TreeActivity : ComponentActivity() {
         }
 
 
+    }
+
+    @Composable
+    fun Meteor() {
+        var showMeteor by remember {
+            mutableStateOf(true)
+        }
+        var rotate by remember {
+            mutableStateOf(0f)
+        }
+        var offsetY by remember {
+            mutableStateOf(0f)
+        }
+
+        LaunchedEffect(Unit) {
+            while (true) {
+                delay(3000)
+                showMeteor = true
+                rotate = -30 + Random(rotate.toInt()).nextInt(90).toFloat()
+                offsetY = -mBaseCirclePx / 3f + Random(offsetY.toInt()).nextInt(10) / 10f * mBaseCirclePx / 6f
+                delay(600)
+                showMeteor = false
+            }
+        }
+
+        val infiniteTransition = rememberInfiniteTransition()
+        val offset by infiniteTransition.animateFloat(
+            initialValue = -1f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = 600,
+                    easing = LinearEasing,
+                    delayMillis = 3000
+                ),
+                repeatMode = RepeatMode.Restart,
+            ),
+
+        )
+
+
+        Canvas(
+            modifier = Modifier
+                .width(mBaseCircle)
+                .height(mBaseCircle)
+                .rotate(rotate)
+                .offset(mBaseCircle / 2f, mBaseCircle / 2f)
+                .graphicsLayer {
+                    translationX = mBaseCircle.toPx() * offset
+                    translationY = offsetY
+                },
+
+        ) {
+            if (showMeteor) {
+                drawLine(
+                    color = Color.White,
+                    start = Offset(
+                        x = -mBaseCirclePx / 20f,
+                        y = 0f
+                    ),
+                    end = Offset(
+                        x = mBaseCirclePx /20f ,
+                        y = 0f
+                    ),
+                    strokeWidth = 8f,
+                )
+            }
+        }
     }
 
     @Composable
@@ -376,7 +445,7 @@ class TreeActivity : ComponentActivity() {
             offsetList[i] = Offset(
                 -mBaseCirclePx / 4f + random.nextInt(mBaseCirclePx.toInt()) / 4f * 3f,
                 -mBaseCirclePx / 4f + random.nextInt(mBaseCirclePx.toInt()) / 4f * 3f,
-                )
+            )
         }
 
 
@@ -413,15 +482,27 @@ class TreeActivity : ComponentActivity() {
                 val startOffsetOut = startLengthOut / 3F
 
                 val pathOut = Path()
-                pathOut.moveTo(offsetList[i]!!.x + 0F , offsetList[i]!!.y + startLengthOut)
-                pathOut.lineTo( offsetList[i]!!.x + startOffsetOut , offsetList[i]!!.y + startOffsetOut )
-                pathOut.lineTo(offsetList[i]!!.x + startLengthOut , offsetList[i]!!.y + 0F)
-                pathOut.lineTo(offsetList[i]!!.x + startOffsetOut  , offsetList[i]!!.y + -startOffsetOut )
-                pathOut.lineTo(offsetList[i]!!.x + 0F , offsetList[i]!!.y + -startLengthOut)
-                pathOut.lineTo(offsetList[i]!!.x + -startOffsetOut  ,offsetList[i]!!.y +  -startOffsetOut )
-                pathOut.lineTo(offsetList[i]!!.x + -startLengthOut , offsetList[i]!!.y + 0F)
-                pathOut.lineTo(offsetList[i]!!.x + -startOffsetOut  , offsetList[i]!!.y + startOffsetOut )
-                pathOut.lineTo(offsetList[i]!!.x + 0F , offsetList[i]!!.y + startLengthOut)
+                pathOut.moveTo(offsetList[i]!!.x + 0F, offsetList[i]!!.y + startLengthOut)
+                pathOut.lineTo(
+                    offsetList[i]!!.x + startOffsetOut,
+                    offsetList[i]!!.y + startOffsetOut
+                )
+                pathOut.lineTo(offsetList[i]!!.x + startLengthOut, offsetList[i]!!.y + 0F)
+                pathOut.lineTo(
+                    offsetList[i]!!.x + startOffsetOut,
+                    offsetList[i]!!.y + -startOffsetOut
+                )
+                pathOut.lineTo(offsetList[i]!!.x + 0F, offsetList[i]!!.y + -startLengthOut)
+                pathOut.lineTo(
+                    offsetList[i]!!.x + -startOffsetOut,
+                    offsetList[i]!!.y + -startOffsetOut
+                )
+                pathOut.lineTo(offsetList[i]!!.x + -startLengthOut, offsetList[i]!!.y + 0F)
+                pathOut.lineTo(
+                    offsetList[i]!!.x + -startOffsetOut,
+                    offsetList[i]!!.y + startOffsetOut
+                )
+                pathOut.lineTo(offsetList[i]!!.x + 0F, offsetList[i]!!.y + startLengthOut)
 
                 drawPath(path = pathOut, color = Color.White, alpha = alphaList[i])
 
@@ -430,15 +511,27 @@ class TreeActivity : ComponentActivity() {
                 val startOffsetInner = startLengthInner / 3F
 
                 val pathInner = Path()
-                pathInner.moveTo(offsetList[i]!!.x + 0F , offsetList[i]!!.y + startLengthInner)
-                pathInner.lineTo( offsetList[i]!!.x + startOffsetInner , offsetList[i]!!.y + startOffsetInner )
-                pathInner.lineTo(offsetList[i]!!.x + startLengthInner , offsetList[i]!!.y + 0F)
-                pathInner.lineTo(offsetList[i]!!.x + startOffsetInner  , offsetList[i]!!.y + -startOffsetInner )
-                pathInner.lineTo(offsetList[i]!!.x + 0F , offsetList[i]!!.y + -startLengthInner)
-                pathInner.lineTo(offsetList[i]!!.x + -startOffsetInner  ,offsetList[i]!!.y +  -startOffsetInner )
-                pathInner.lineTo(offsetList[i]!!.x + -startLengthInner , offsetList[i]!!.y + 0F)
-                pathInner.lineTo(offsetList[i]!!.x + -startOffsetInner  , offsetList[i]!!.y + startOffsetInner )
-                pathInner.lineTo(offsetList[i]!!.x + 0F , offsetList[i]!!.y + startLengthInner)
+                pathInner.moveTo(offsetList[i]!!.x + 0F, offsetList[i]!!.y + startLengthInner)
+                pathInner.lineTo(
+                    offsetList[i]!!.x + startOffsetInner,
+                    offsetList[i]!!.y + startOffsetInner
+                )
+                pathInner.lineTo(offsetList[i]!!.x + startLengthInner, offsetList[i]!!.y + 0F)
+                pathInner.lineTo(
+                    offsetList[i]!!.x + startOffsetInner,
+                    offsetList[i]!!.y + -startOffsetInner
+                )
+                pathInner.lineTo(offsetList[i]!!.x + 0F, offsetList[i]!!.y + -startLengthInner)
+                pathInner.lineTo(
+                    offsetList[i]!!.x + -startOffsetInner,
+                    offsetList[i]!!.y + -startOffsetInner
+                )
+                pathInner.lineTo(offsetList[i]!!.x + -startLengthInner, offsetList[i]!!.y + 0F)
+                pathInner.lineTo(
+                    offsetList[i]!!.x + -startOffsetInner,
+                    offsetList[i]!!.y + startOffsetInner
+                )
+                pathInner.lineTo(offsetList[i]!!.x + 0F, offsetList[i]!!.y + startLengthInner)
 
                 drawPath(path = pathInner, color = skyColorSummer, alpha = alphaList[i])
 
@@ -456,7 +549,7 @@ class TreeActivity : ComponentActivity() {
             mutableStateOf(LightNode())
         }
 
-            lights = generateLights(mBaseCirclePx)
+        lights = generateLights(mBaseCirclePx)
 
 
         LaunchedEffect(Unit) {
@@ -675,7 +768,7 @@ class TreeActivity : ComponentActivity() {
             }
 
             // draw flowers
-            if (season == Season.Summer){
+            if (season == Season.Summer) {
                 return@Canvas
             }
             while (flowerQueue.isNotEmpty()) {
