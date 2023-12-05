@@ -3,6 +3,7 @@ package com.clwater.compose_canvas.tree
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.LinearEasing
@@ -54,6 +55,7 @@ import java.util.ArrayDeque
 import java.util.Queue
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.sqrt
 import kotlin.random.Random
 
 
@@ -84,6 +86,11 @@ data class TreeNode(
     var startOffset: Offset = Offset(0f, 0f)
 )
 
+data class LightNode(
+    var offset: Offset = Offset(0f, 0f),
+    var next: LightNode? = null
+)
+
 
 class TreeActivity : ComponentActivity() {
     companion object {
@@ -105,6 +112,9 @@ class TreeActivity : ComponentActivity() {
         val skyColorSpring = Color(0xFF69ADA3)
         val landColorSpring = Color(0xFF59C255)
         val rainColor = Color(0x99CCD5CC)
+        val lightColor = Color(0xFFEED709)
+        val lightSkyColor = Color(0xFF70CFC1)
+
         val skyColorSummer = Color(0xFF4D59AF)
         val landColorSummer = Color(0xFF1E1F44)
         val skyColorAutumn = Color(0xFFFAC164)
@@ -331,8 +341,8 @@ class TreeActivity : ComponentActivity() {
         ) {
             when(season){
                 Season.Spring -> {
-                    SpringRain()
                     Light()
+                    SpringRain()
                 }
                 Season.Autumn -> {
                     Cloud_1()
@@ -341,42 +351,105 @@ class TreeActivity : ComponentActivity() {
                 else -> {}
             }
             TreeLand(season)
-
-//            Tree(seed, season)
+            Tree(seed, season)
         }
+
 
     }
 
     @Composable
     fun Light() {
         var showLight by remember {
-            mutableStateOf(true)
+            mutableStateOf(false)
         }
-//        LaunchedEffect(Unit) {
-//            while (true) {
-//                delay(3000)
-//                showLight = true
-//                delay(1000)
-//                showLight = false
-//            }
-//        }
+        var lights by remember {
+            mutableStateOf(LightNode())
+        }
+        with(LocalDensity.current){
+            lights = generateLights(mBaseCircle.toPx())
+        }
+
+        LaunchedEffect(Unit) {
+            while (true) {
+                delay(3000)
+                showLight = true
+                delay(300)
+                showLight = false
+            }
+        }
+
+
 
         if (showLight) {
             Canvas(
                 modifier = Modifier
                     .width(mBaseCircle)
                     .height(mBaseCircle)
-                    .offset(mBaseCircle / 2f, mBaseCircle / 2f)
+                    .background(if (showLight) lightSkyColor else Color.Transparent)
+                    .offset(mBaseCircle / 2f, mBaseCircle)
 
             ) {
-
-                drawCircle(color = Color.Red,
-                    radius = 10f,
-                    center = Offset(x = 0f, y = 0f)
-                )
+                var currentLight = lights
+                while(currentLight.next != null){
+                    drawLine(
+                        color = lightColor,
+                        start = currentLight.offset,
+                        end = currentLight.next!!.offset,
+                        strokeWidth = 8f,
+                        )
+                    currentLight = currentLight.next!!
+                }
             }
         }
 
+    }
+
+    private fun generateLights(light: LightNode): LightNode{
+        if (light.next == null){
+            return light
+        }
+        val next = light.next!!
+
+        val distance = next.offset - light.offset
+
+        if (distance.x * distance.x + distance.y * distance.y > 100){
+            val newLight = LightNode()
+            newLight.offset = Offset(
+                x = light.offset.x + distance.x / 2f,
+                y = light.offset.y + distance.y / 2f,
+            )
+
+            val newDistanceOffset = newLight.offset - light.offset
+            val newDistance = sqrt((newDistanceOffset.x * newDistanceOffset.x + newDistanceOffset.y * newDistanceOffset.y).toDouble()) / 2f
+
+            newLight.offset = Offset(
+                x = (newLight.offset.x + newDistance * sin(Math.toRadians(random.nextInt(360).toDouble()))).toFloat(),
+                y = (newLight.offset.y + newDistance * cos(Math.toRadians(random.nextInt(360).toDouble()))).toFloat()
+
+            )
+            newLight.next = next
+            light.next = newLight
+            return generateLights(light)
+        }else{
+            light.next = generateLights(next)
+            return light
+        }
+
+
+    }
+
+    private fun generateLights(height: Float): LightNode {
+
+        var lights = LightNode()
+        lights.offset = Offset(0f, -height)
+
+        val next = LightNode()
+        next.offset = Offset(0f, 0f)
+        lights.next = next
+
+        lights = generateLights(lights)
+
+        return lights
     }
 
     @Composable
