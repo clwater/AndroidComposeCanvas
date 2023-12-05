@@ -3,7 +3,6 @@ package com.clwater.compose_canvas.tree
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.LinearEasing
@@ -45,6 +44,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
@@ -126,6 +126,7 @@ class TreeActivity : ComponentActivity() {
     private lateinit var random: Random
 
     private var mBaseCircle = 0.dp
+    private var mBaseCirclePx = 0f
     private var flowerCount = 0
     private var minLength: Float = 0.0f
 
@@ -193,10 +194,11 @@ class TreeActivity : ComponentActivity() {
     fun TreeLayout() {
         with(LocalDensity.current) {
             mBaseCircle = resources.displayMetrics.widthPixels.toFloat().toDp() * 0.9f
+            mBaseCirclePx = mBaseCircle.toPx()
         }
 
         var season by remember {
-            mutableStateOf(Season.Spring)
+            mutableStateOf(Season.Summer)
         }
 
         var seed by remember {
@@ -339,15 +341,21 @@ class TreeActivity : ComponentActivity() {
                 ),
             contentAlignment = Alignment.Center
         ) {
-            when(season){
+            when (season) {
                 Season.Spring -> {
                     Light()
                     SpringRain()
                 }
+
                 Season.Autumn -> {
                     Cloud_1()
                     Cloud_2()
                 }
+
+                Season.Summer -> {
+                    Starts(seed)
+                }
+
                 else -> {}
             }
             TreeLand(season)
@@ -358,6 +366,88 @@ class TreeActivity : ComponentActivity() {
     }
 
     @Composable
+    fun Starts(seed: Int) {
+        val maxStart = 50
+        val infiniteTransition = rememberInfiniteTransition()
+        val alphaList: MutableList<Float> = mutableListOf()
+        val offsetList = mutableMapOf<Int, Offset>()
+        random = Random(seed)
+        for (i in 0..maxStart) {
+            offsetList[i] = Offset(
+                -mBaseCirclePx / 4f + random.nextInt(mBaseCirclePx.toInt()) / 4f * 3f,
+                -mBaseCirclePx / 4f + random.nextInt(mBaseCirclePx.toInt()) / 4f * 3f,
+                )
+        }
+
+
+        for (i in 0..maxStart) {
+            val alpha: Float by infiniteTransition.animateFloat(
+                initialValue = 0f,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(
+                        durationMillis = 3011,
+                        easing = LinearEasing,
+                        delayMillis = if (random.nextInt(3011 * 2) - 3011 / 2f < 0) {
+                            0
+                        } else {
+                            random.nextInt(3011 * 2) - 3011 / 2f
+                        }.toInt(),
+                    ),
+                    repeatMode = RepeatMode.Reverse,
+                ),
+            )
+            alphaList.add(alpha)
+        }
+
+
+        Canvas(
+            modifier = Modifier
+                .width(mBaseCircle)
+                .height(mBaseCircle)
+                .offset(x = mBaseCircle / 2f, y = mBaseCircle / 2f),
+        ) {
+            for (i in 0..maxStart) {
+
+                val startLengthOut = mBaseCirclePx / 70f
+                val startOffsetOut = startLengthOut / 3F
+
+                val pathOut = Path()
+                pathOut.moveTo(offsetList[i]!!.x + 0F , offsetList[i]!!.y + startLengthOut)
+                pathOut.lineTo( offsetList[i]!!.x + startOffsetOut , offsetList[i]!!.y + startOffsetOut )
+                pathOut.lineTo(offsetList[i]!!.x + startLengthOut , offsetList[i]!!.y + 0F)
+                pathOut.lineTo(offsetList[i]!!.x + startOffsetOut  , offsetList[i]!!.y + -startOffsetOut )
+                pathOut.lineTo(offsetList[i]!!.x + 0F , offsetList[i]!!.y + -startLengthOut)
+                pathOut.lineTo(offsetList[i]!!.x + -startOffsetOut  ,offsetList[i]!!.y +  -startOffsetOut )
+                pathOut.lineTo(offsetList[i]!!.x + -startLengthOut , offsetList[i]!!.y + 0F)
+                pathOut.lineTo(offsetList[i]!!.x + -startOffsetOut  , offsetList[i]!!.y + startOffsetOut )
+                pathOut.lineTo(offsetList[i]!!.x + 0F , offsetList[i]!!.y + startLengthOut)
+
+                drawPath(path = pathOut, color = Color.White, alpha = alphaList[i])
+
+
+                val startLengthInner = startLengthOut * 0.3f
+                val startOffsetInner = startLengthInner / 3F
+
+                val pathInner = Path()
+                pathInner.moveTo(offsetList[i]!!.x + 0F , offsetList[i]!!.y + startLengthInner)
+                pathInner.lineTo( offsetList[i]!!.x + startOffsetInner , offsetList[i]!!.y + startOffsetInner )
+                pathInner.lineTo(offsetList[i]!!.x + startLengthInner , offsetList[i]!!.y + 0F)
+                pathInner.lineTo(offsetList[i]!!.x + startOffsetInner  , offsetList[i]!!.y + -startOffsetInner )
+                pathInner.lineTo(offsetList[i]!!.x + 0F , offsetList[i]!!.y + -startLengthInner)
+                pathInner.lineTo(offsetList[i]!!.x + -startOffsetInner  ,offsetList[i]!!.y +  -startOffsetInner )
+                pathInner.lineTo(offsetList[i]!!.x + -startLengthInner , offsetList[i]!!.y + 0F)
+                pathInner.lineTo(offsetList[i]!!.x + -startOffsetInner  , offsetList[i]!!.y + startOffsetInner )
+                pathInner.lineTo(offsetList[i]!!.x + 0F , offsetList[i]!!.y + startLengthInner)
+
+                drawPath(path = pathInner, color = skyColorSummer, alpha = alphaList[i])
+
+
+            }
+        }
+    }
+
+    @Composable
     fun Light() {
         var showLight by remember {
             mutableStateOf(false)
@@ -365,9 +455,9 @@ class TreeActivity : ComponentActivity() {
         var lights by remember {
             mutableStateOf(LightNode())
         }
-        with(LocalDensity.current){
-            lights = generateLights(mBaseCircle.toPx())
-        }
+
+            lights = generateLights(mBaseCirclePx)
+
 
         LaunchedEffect(Unit) {
             while (true) {
@@ -390,13 +480,13 @@ class TreeActivity : ComponentActivity() {
 
             ) {
                 var currentLight = lights
-                while(currentLight.next != null){
+                while (currentLight.next != null) {
                     drawLine(
                         color = lightColor,
                         start = currentLight.offset,
                         end = currentLight.next!!.offset,
                         strokeWidth = 8f,
-                        )
+                    )
                     currentLight = currentLight.next!!
                 }
             }
@@ -404,15 +494,15 @@ class TreeActivity : ComponentActivity() {
 
     }
 
-    private fun generateLights(light: LightNode): LightNode{
-        if (light.next == null){
+    private fun generateLights(light: LightNode): LightNode {
+        if (light.next == null) {
             return light
         }
         val next = light.next!!
 
         val distance = next.offset - light.offset
 
-        if (distance.x * distance.x + distance.y * distance.y > 100){
+        if (distance.x * distance.x + distance.y * distance.y > 100) {
             val newLight = LightNode()
             newLight.offset = Offset(
                 x = light.offset.x + distance.x / 2f,
@@ -420,17 +510,26 @@ class TreeActivity : ComponentActivity() {
             )
 
             val newDistanceOffset = newLight.offset - light.offset
-            val newDistance = sqrt((newDistanceOffset.x * newDistanceOffset.x + newDistanceOffset.y * newDistanceOffset.y).toDouble()) / 2f
+            val newDistance =
+                sqrt((newDistanceOffset.x * newDistanceOffset.x + newDistanceOffset.y * newDistanceOffset.y).toDouble()) / 2f
 
             newLight.offset = Offset(
-                x = (newLight.offset.x + newDistance * sin(Math.toRadians(random.nextInt(360).toDouble()))).toFloat(),
-                y = (newLight.offset.y + newDistance * cos(Math.toRadians(random.nextInt(360).toDouble()))).toFloat()
+                x = (newLight.offset.x + newDistance * sin(
+                    Math.toRadians(
+                        random.nextInt(360).toDouble()
+                    )
+                )).toFloat(),
+                y = (newLight.offset.y + newDistance * cos(
+                    Math.toRadians(
+                        random.nextInt(360).toDouble()
+                    )
+                )).toFloat()
 
             )
             newLight.next = next
             light.next = newLight
             return generateLights(light)
-        }else{
+        } else {
             light.next = generateLights(next)
             return light
         }
@@ -469,10 +568,10 @@ class TreeActivity : ComponentActivity() {
         val maxRains = 100
         val rainOffset = mutableMapOf<Int, Offset>()
 
-        for(index in 0 until maxRains){
+        for (index in 0 until maxRains) {
             rainOffset[index] = Offset(
-                x = - 2f * mBaseCircle.value  +  4f * random.nextInt(mBaseCircle.value.toInt()),
-                y = - 1f * mBaseCircle.value  +  2f * random.nextInt(mBaseCircle.value.toInt())
+                x = -2f * mBaseCircle.value + 4f * random.nextInt(mBaseCircle.value.toInt()),
+                y = -1f * mBaseCircle.value + 2f * random.nextInt(mBaseCircle.value.toInt())
             )
         }
 
@@ -483,19 +582,19 @@ class TreeActivity : ComponentActivity() {
                 .offset(mBaseCircle / 2f, mBaseCircle / 2f)
                 .rotate(10f)
                 .graphicsLayer {
-//                    translationY  = mBaseCircle.toPx() / 2f * offset
-                }
-            ,
+//                    translationY  = mBaseCirclePx / 2f * offset
+                },
 
             ) {
-            for(i in -2 .. 2){
+            for (i in -2..2) {
                 for (j in 0 until maxRains) {
                     drawRoundRect(
                         color = rainColor,
-                        size = Size(mBaseCircle.toPx() / 400f, mBaseCircle.toPx() / 20f),
+                        size = Size(mBaseCirclePx / 400f, mBaseCirclePx / 20f),
                         cornerRadius = CornerRadius(size.minDimension / 2f),
-                        topLeft = Offset(x = rainOffset[j]!!.x ,
-                            y = mBaseCircle.value * offset + i *  mBaseCircle.value + rainOffset[j]!!.y
+                        topLeft = Offset(
+                            x = rainOffset[j]!!.x,
+                            y = mBaseCircle.value * offset + i * mBaseCircle.value + rainOffset[j]!!.y
                         ),
                     )
                 }
@@ -518,8 +617,8 @@ class TreeActivity : ComponentActivity() {
 
             drawLine(
                 color = treeColor,
-                start = Offset(x = 0f, y = -mBaseCircle.toPx() / 20f),
-                end = Offset(0f, -baseTreeLength.toPx() - mBaseCircle.toPx() / 20f),
+                start = Offset(x = 0f, y = -mBaseCirclePx / 20f),
+                end = Offset(0f, -baseTreeLength.toPx() - mBaseCirclePx / 20f),
                 strokeWidth = 10f,
             )
             val treeQueue: Queue<TreeNode> = ArrayDeque()
@@ -528,7 +627,7 @@ class TreeActivity : ComponentActivity() {
 
 
             for (treeNode in tree.child) {
-                treeNode.startOffset = Offset(0f, -baseTreeLength.toPx() - mBaseCircle.toPx() / 20f)
+                treeNode.startOffset = Offset(0f, -baseTreeLength.toPx() - mBaseCirclePx / 20f)
                 treeQueue.offer(treeNode)
             }
 
@@ -576,6 +675,9 @@ class TreeActivity : ComponentActivity() {
             }
 
             // draw flowers
+            if (season == Season.Summer){
+                return@Canvas
+            }
             while (flowerQueue.isNotEmpty()) {
                 val treeNode = flowerQueue.poll() ?: break
                 drawCircle(
