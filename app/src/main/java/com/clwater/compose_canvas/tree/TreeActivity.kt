@@ -368,6 +368,8 @@ class TreeActivity : ComponentActivity() {
 
     @Composable
     fun Meteor() {
+        val delayTime = 3000L
+        val runTime = 800L
         var showMeteor by remember {
             mutableStateOf(true)
         }
@@ -380,11 +382,11 @@ class TreeActivity : ComponentActivity() {
 
         LaunchedEffect(Unit) {
             while (true) {
-                delay(3000)
+                delay(delayTime)
                 showMeteor = true
                 rotate = -30 + Random(rotate.toInt()).nextInt(90).toFloat()
                 offsetY = -mBaseCirclePx / 3f + Random(offsetY.toInt()).nextInt(10) / 10f * mBaseCirclePx / 6f
-                delay(600)
+                delay(runTime)
                 showMeteor = false
             }
         }
@@ -395,9 +397,9 @@ class TreeActivity : ComponentActivity() {
             targetValue = 1f,
             animationSpec = infiniteRepeatable(
                 animation = tween(
-                    durationMillis = 600,
+                    durationMillis = runTime.toInt(),
                     easing = LinearEasing,
-                    delayMillis = 3000
+                    delayMillis = delayTime.toInt()
                 ),
                 repeatMode = RepeatMode.Restart,
             ),
@@ -418,18 +420,24 @@ class TreeActivity : ComponentActivity() {
 
         ) {
             if (showMeteor) {
-                drawLine(
-                    color = Color.White,
-                    start = Offset(
-                        x = -mBaseCirclePx / 20f,
-                        y = 0f
-                    ),
-                    end = Offset(
-                        x = mBaseCirclePx /20f ,
-                        y = 0f
-                    ),
-                    strokeWidth = 8f,
-                )
+                var meterSize = 15f
+                var meterOffset = -meterSize / 2
+
+                for (i in 0..10) {
+                    meterSize *= 0.8f
+                    if (meterSize < 5f){
+                        meterSize = 5f
+                    }
+                    val path = Path()
+                    path.moveTo(meterOffset + 0f, meterSize)
+                    path.lineTo(meterOffset + meterSize, 0f)
+                    path.lineTo(meterOffset + 0f, -meterSize)
+                    path.lineTo(meterOffset + -meterSize, 0f)
+                    path.lineTo(meterOffset + 0f, meterSize)
+                    drawPath(path = path, color = Color.White)
+
+                    meterOffset += if (i < 3) -meterSize else -meterSize * random.nextInt(3) + 1
+                }
             }
         }
     }
