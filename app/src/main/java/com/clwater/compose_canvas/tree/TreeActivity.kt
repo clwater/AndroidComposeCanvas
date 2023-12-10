@@ -359,6 +359,7 @@ class TreeActivity : ComponentActivity() {
 
                 Season.Winter -> {
                     Snows(seed)
+                    SnowMan()
                 }
 
             }
@@ -367,6 +368,108 @@ class TreeActivity : ComponentActivity() {
         }
 
 
+    }
+
+    @Composable
+    fun SnowMan() {
+        val delayTime = 4000L
+        val runTime = 4000L
+        var showSnowMan by remember {
+            mutableStateOf(false)
+        }
+
+        val infiniteTransition = rememberInfiniteTransition()
+        val offset by infiniteTransition.animateFloat(
+            initialValue = -1f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = runTime.toInt(),
+                    easing = LinearEasing,
+                ),
+                repeatMode = RepeatMode.Restart,
+            ),
+        )
+
+        LaunchedEffect(Unit){
+            while (true){
+                delay(delayTime)
+                showSnowMan = true
+                delay(runTime)
+                showSnowMan = false
+            }
+        }
+
+        if (!showSnowMan){
+            return
+        }
+
+        Canvas(
+            modifier = Modifier
+                .width(mBaseCircle)
+                .height(mBaseCircle)
+                .rotate(90 * offset)
+                .offset(x = mBaseCircle / 2f, y = mBaseCircle / 4f * 3 + mBaseCircle / 20f) ,
+
+
+            )
+        {
+            drawCircle(
+                color = Color.White,
+                radius = mBaseCirclePx / 20f,
+                center = Offset(
+                    x = (0f + sin(Math.toRadians(90.0) * offset) * mBaseCirclePx / 2f).toFloat() + mBaseCirclePx / 4f,
+                    y = (0f + -cos(Math.toRadians(90.0) * offset) * mBaseCirclePx / 4f).toFloat() + mBaseCirclePx / 4f,
+                ),
+            )
+            drawCircle(
+                color = Color.White,
+                radius = mBaseCirclePx / 30f,
+                center = Offset(
+                    x = (0f + sin(Math.toRadians(90.0) * offset) * mBaseCirclePx / 2f).toFloat() + mBaseCirclePx / 4f,
+                    y = (0f + -cos(Math.toRadians(90.0) * offset) * mBaseCirclePx / 4f).toFloat() + mBaseCirclePx / 4f - mBaseCirclePx / 15f,
+                ),
+            )
+            // eyes
+            drawCircle(
+                color = Color.Black,
+                radius = mBaseCirclePx / 30f / 5f,
+                center = Offset(
+                    x = (0f + sin(Math.toRadians(90.0) * offset) * mBaseCirclePx / 2f).toFloat() + mBaseCirclePx / 4f - mBaseCirclePx / 30f / 2f,
+                    y = (0f + -cos(Math.toRadians(90.0) * offset) * mBaseCirclePx / 4f).toFloat() + mBaseCirclePx / 4f - mBaseCirclePx / 15f - mBaseCirclePx / 30f / 3f,
+                ),
+            )
+            drawCircle(
+                color = Color.Black,
+                radius = mBaseCirclePx / 30f / 5f,
+                center = Offset(
+                    x = (0f + sin(Math.toRadians(90.0) * offset) * mBaseCirclePx / 2f).toFloat() + mBaseCirclePx / 4f + mBaseCirclePx / 30f / 2f,
+                    y = (0f + -cos(Math.toRadians(90.0) * offset) * mBaseCirclePx / 4f).toFloat() + mBaseCirclePx / 4f - mBaseCirclePx / 15f - mBaseCirclePx / 30f / 3f,
+                ),
+            )
+            drawCircle(
+                color = Color.Red,
+                radius = mBaseCirclePx / 30f / 10f,
+                center = Offset(
+                    x = (0f + sin(Math.toRadians(90.0) * offset) * mBaseCirclePx / 2f).toFloat() + mBaseCirclePx / 4f ,
+                    y = (0f + -cos(Math.toRadians(90.0) * offset) * mBaseCirclePx / 4f).toFloat() + mBaseCirclePx / 4f - mBaseCirclePx / 15f - mBaseCirclePx / 30f / 6f,
+                ),
+            )
+
+            drawArc(
+                color = Color.Black,
+                startAngle = 0f,
+                sweepAngle = 180f,
+                useCenter = false,
+                topLeft = Offset(
+                    x = (0f + sin(Math.toRadians(90.0) * offset) * mBaseCirclePx / 2f).toFloat() + mBaseCirclePx / 4f - mBaseCirclePx / 40f / 2f,
+                    y = (0f + -cos(Math.toRadians(90.0) * offset) * mBaseCirclePx / 4f).toFloat() + mBaseCirclePx / 4f - mBaseCirclePx / 15f - mBaseCirclePx / 30f / 3f,
+                ),
+                size = Size(mBaseCirclePx / 40f, mBaseCirclePx / 40f),
+
+            )
+
+        }
     }
 
     @Composable
