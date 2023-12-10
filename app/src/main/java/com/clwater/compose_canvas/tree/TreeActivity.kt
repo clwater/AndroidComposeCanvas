@@ -198,7 +198,7 @@ class TreeActivity : ComponentActivity() {
         }
 
         var season by remember {
-            mutableStateOf(Season.Summer)
+            mutableStateOf(Season.Winter)
         }
 
         var seed by remember {
@@ -357,12 +357,67 @@ class TreeActivity : ComponentActivity() {
                     Meteor()
                 }
 
-                else -> {}
+                Season.Winter -> {
+                    Snows(seed)
+                }
+
             }
             TreeLand(season)
             Tree(seed, season)
         }
 
+
+    }
+
+    @Composable
+    fun Snows(seed: Int) {
+        val maxSnow = 200
+        val infiniteTransition = rememberInfiniteTransition()
+        val offsetYList: MutableList<Float> = mutableListOf()
+        val offsetList = mutableMapOf<Int, Offset>()
+        random = Random(seed)
+        for (i in 0..maxSnow) {
+            offsetList[i] = Offset(
+                -mBaseCirclePx / 2f + random.nextInt(mBaseCirclePx.toInt()),
+                -mBaseCirclePx / 10f
+            )
+        }
+
+
+        for (i in 0..maxSnow) {
+            val offsetY: Float by infiniteTransition.animateFloat(
+                initialValue = 0f,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(
+                        durationMillis = 3011,
+                        easing = LinearEasing,
+                        delayMillis = (random.nextInt(3011 * 2) - 3011 / 2f).toInt()
+                    ),
+                    repeatMode = RepeatMode.Restart,
+                ),
+            )
+            offsetYList.add(offsetY)
+        }
+
+        Canvas(
+            modifier = Modifier
+                .width(mBaseCircle)
+                .height(mBaseCircle)
+                .offset(x = mBaseCircle / 2f, y = 0.dp),
+        ) {
+            for (i in 0..maxSnow) {
+
+                drawCircle(
+                    color = Color.White,
+                    radius = 5f,
+                    center = Offset(
+                        x = offsetList[i]!!.x,
+                        y = offsetList[i]!!.y + mBaseCirclePx  * offsetYList[i]
+                    ),
+                )
+            }
+        }
 
     }
 
@@ -385,7 +440,8 @@ class TreeActivity : ComponentActivity() {
                 delay(delayTime)
                 showMeteor = true
                 rotate = -30 + Random(rotate.toInt()).nextInt(90).toFloat()
-                offsetY = -mBaseCirclePx / 3f + Random(offsetY.toInt()).nextInt(10) / 10f * mBaseCirclePx / 6f
+                offsetY =
+                    -mBaseCirclePx / 3f + Random(offsetY.toInt()).nextInt(10) / 10f * mBaseCirclePx / 6f
                 delay(runTime)
                 showMeteor = false
             }
@@ -404,7 +460,7 @@ class TreeActivity : ComponentActivity() {
                 repeatMode = RepeatMode.Restart,
             ),
 
-        )
+            )
 
 
         Canvas(
@@ -418,14 +474,14 @@ class TreeActivity : ComponentActivity() {
                     translationY = offsetY
                 },
 
-        ) {
+            ) {
             if (showMeteor) {
                 var meterSize = 15f
                 var meterOffset = -meterSize / 2
 
                 for (i in 0..10) {
                     meterSize *= 0.8f
-                    if (meterSize < 5f){
+                    if (meterSize < 5f) {
                         meterSize = 5f
                     }
                     val path = Path()
