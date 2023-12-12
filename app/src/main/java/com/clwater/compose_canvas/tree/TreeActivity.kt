@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -102,6 +103,7 @@ class TreeActivity : ComponentActivity() {
         val cloudColor = Color(0xFFF5F5F5)
         val treeColor = Color(0xFF412e1f)
         val flowerColor = Color(0xFFFFFFFF)
+        val flowerColorAutumn = Color(0xFF128604)
         val fruitColor = Color(0xFFe66e4a)
         val fruitColorEnd = Color(0x1AE66E4A)
         val seasonSpring = Color(0xFF7FDF69)
@@ -391,8 +393,8 @@ class TreeActivity : ComponentActivity() {
             ),
         )
 
-        LaunchedEffect(Unit){
-            while (true){
+        LaunchedEffect(Unit) {
+            while (true) {
                 delay(delayTime)
                 showSnowMan = true
                 delay(runTime)
@@ -400,7 +402,7 @@ class TreeActivity : ComponentActivity() {
             }
         }
 
-        if (!showSnowMan){
+        if (!showSnowMan) {
             return
         }
 
@@ -409,7 +411,7 @@ class TreeActivity : ComponentActivity() {
                 .width(mBaseCircle)
                 .height(mBaseCircle)
                 .rotate(90 * offset)
-                .offset(x = mBaseCircle / 2f, y = mBaseCircle / 4f * 3 + mBaseCircle / 20f) ,
+                .offset(x = mBaseCircle / 2f, y = mBaseCircle / 4f * 3 + mBaseCircle / 20f),
 
 
             )
@@ -451,7 +453,7 @@ class TreeActivity : ComponentActivity() {
                 color = Color.Red,
                 radius = mBaseCirclePx / 30f / 10f,
                 center = Offset(
-                    x = (0f + sin(Math.toRadians(90.0) * offset) * mBaseCirclePx / 2f).toFloat() + mBaseCirclePx / 4f ,
+                    x = (0f + sin(Math.toRadians(90.0) * offset) * mBaseCirclePx / 2f).toFloat() + mBaseCirclePx / 4f,
                     y = (0f + -cos(Math.toRadians(90.0) * offset) * mBaseCirclePx / 4f).toFloat() + mBaseCirclePx / 4f - mBaseCirclePx / 15f - mBaseCirclePx / 30f / 6f,
                 ),
             )
@@ -467,7 +469,7 @@ class TreeActivity : ComponentActivity() {
                 ),
                 size = Size(mBaseCirclePx / 40f, mBaseCirclePx / 40f),
 
-            )
+                )
 
         }
     }
@@ -516,7 +518,7 @@ class TreeActivity : ComponentActivity() {
                     radius = 5f,
                     center = Offset(
                         x = offsetList[i]!!.x,
-                        y = offsetList[i]!!.y + mBaseCirclePx  * offsetYList[i]
+                        y = offsetList[i]!!.y + mBaseCirclePx * offsetYList[i]
                     ),
                 )
             }
@@ -538,17 +540,6 @@ class TreeActivity : ComponentActivity() {
             mutableStateOf(0f)
         }
 
-        LaunchedEffect(Unit) {
-            while (true) {
-                delay(delayTime)
-                showMeteor = true
-                rotate = -30 + Random(rotate.toInt()).nextInt(90).toFloat()
-                offsetY =
-                    -mBaseCirclePx / 3f + Random(offsetY.toInt()).nextInt(10) / 10f * mBaseCirclePx / 6f
-                delay(runTime)
-                showMeteor = false
-            }
-        }
 
         val infiniteTransition = rememberInfiniteTransition()
         val offset by infiniteTransition.animateFloat(
@@ -565,6 +556,17 @@ class TreeActivity : ComponentActivity() {
 
             )
 
+        LaunchedEffect(Unit) {
+            while (true) {
+                delay(delayTime)
+                showMeteor = true
+                rotate = -30 + Random(rotate.toInt()).nextInt(90).toFloat()
+                offsetY =
+                    -mBaseCirclePx / 3f + Random(offsetY.toInt()).nextInt(10) / 10f * mBaseCirclePx / 6f
+                delay(runTime)
+                showMeteor = false
+            }
+        }
 
         Canvas(
             modifier = Modifier
@@ -793,8 +795,6 @@ class TreeActivity : ComponentActivity() {
             light.next = generateLights(next)
             return light
         }
-
-
     }
 
     private fun generateLights(height: Float): LightNode {
@@ -842,7 +842,6 @@ class TreeActivity : ComponentActivity() {
                 .offset(mBaseCircle / 2f, mBaseCircle / 2f)
                 .rotate(10f)
                 .graphicsLayer {
-//                    translationY  = mBaseCirclePx / 2f * offset
                 },
 
             ) {
@@ -865,6 +864,23 @@ class TreeActivity : ComponentActivity() {
     @Composable
     fun Tree(seed: Int, season: Season) {
 
+        val infiniteTransition = rememberInfiniteTransition()
+
+        val offsetPosition: Float by infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(
+                    durationMillis = 1001,
+                    easing = EaseOutBounce,
+                    delayMillis = 4000,
+                ),
+                repeatMode = RepeatMode.Restart,
+            ),
+        )
+
+
+
         val tree = genNewTrees(seed)
         val baseTreeLength = mBaseCircle / 4f
         Canvas(
@@ -884,6 +900,7 @@ class TreeActivity : ComponentActivity() {
             val treeQueue: Queue<TreeNode> = ArrayDeque()
             val flowerQueue: Queue<TreeNode> = ArrayDeque()
             val fruitQueue: Queue<TreeNode> = ArrayDeque()
+            var downTreeNode: TreeNode? = null
 
 
             for (treeNode in tree.child) {
@@ -928,8 +945,11 @@ class TreeActivity : ComponentActivity() {
 
                 // offer the flower/fruit child to queue
                 if (type == TreeType.FLOWER) {
+                        if (downTreeNode == null) {
+                            downTreeNode = treeNode
+                        }
                     flowerQueue.offer(treeNode)
-                } else if (type == TreeType.FRUIT) {
+                } else if (type == TreeType.FRUIT && season != Season.Autumn) {
                     fruitQueue.offer(treeNode)
                 }
             }
@@ -940,11 +960,20 @@ class TreeActivity : ComponentActivity() {
             }
             while (flowerQueue.isNotEmpty()) {
                 val treeNode = flowerQueue.poll() ?: break
-                drawCircle(
-                    color = flowerColor,
-                    radius = 10f,
-                    center = treeNode.startOffset,
-                )
+                if (season != Season.Autumn) {
+                    drawCircle(
+                        color = flowerColor,
+                        radius = 10f,
+                        center = treeNode.startOffset,
+                    )
+                } else {
+                    drawCircle(
+                        color = flowerColorAutumn,
+                        radius = 6f,
+                        center = treeNode.startOffset,
+                    )
+                }
+
             }
 
             while (fruitQueue.isNotEmpty()) {
@@ -962,6 +991,16 @@ class TreeActivity : ComponentActivity() {
                     radius = 20f
                 )
 
+            }
+            if (season == Season.Autumn){
+                downTreeNode?.let {
+                    drawCircle(
+                        color = flowerColorAutumn,
+                        radius = 6f,
+                        center = Offset(x = it.startOffset.x,
+                            y = it.startOffset.y + mBaseCirclePx / 3f * offsetPosition),
+                    )
+                }
             }
 
         }
@@ -1080,4 +1119,22 @@ class TreeActivity : ComponentActivity() {
         }
     }
 
+    private val EaseOutBounce = Easing { fraction ->
+        val n1 = 7.5625f
+        val d1 = 2.75f
+        var newFraction = fraction
+
+        return@Easing if (newFraction < 1f / d1) {
+            n1 * newFraction * newFraction
+        } else if (newFraction < 2f / d1) {
+            newFraction -= 1.5f / d1
+            n1 * newFraction * newFraction + 0.75f
+        } else if (newFraction < 2.5f / d1) {
+            newFraction -= 2.25f / d1
+            n1 * newFraction * newFraction + 0.9375f
+        } else {
+            newFraction -= 2.625f / d1
+            n1 * newFraction * newFraction + 0.984375f
+        }
+    }
 }
