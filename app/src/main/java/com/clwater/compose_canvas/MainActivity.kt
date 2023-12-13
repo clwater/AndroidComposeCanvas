@@ -18,7 +18,7 @@ import com.clwater.compose_canvas.ui.theme.AndroidComposeCanvasTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        TreeActivity.start(this@MainActivity)
+//        TreeActivity.start(this@MainActivity)
         super.onCreate(savedInstanceState)
         setContent {
             AndroidComposeCanvasTheme {
@@ -40,6 +40,9 @@ class MainActivity : ComponentActivity() {
                         }
                         Button(onClick = { ClapActivity.start(this@MainActivity) }) {
                             Text(text = "Clap")
+                        }
+                        Button(onClick = { TreeActivity.start(this@MainActivity) }) {
+                            Text(text = "Tree")
                         }
                     }
                 }
