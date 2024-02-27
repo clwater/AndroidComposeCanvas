@@ -22,7 +22,9 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.core.animation.addListener
 import androidx.core.animation.doOnEnd
@@ -95,7 +97,9 @@ class Canvas1Activity : ComponentActivity() {
                             modifier = Modifier.fillMaxWidth(1f),
                             horizontalArrangement = Arrangement.Center,
                         ) {
-                            Canvas_1()
+                            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                                Canvas_1()
+                            }
                         }
                         Slider(
                             value = model.progress.value,

@@ -30,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,7 +49,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.clwater.compose_canvas.ui.theme.AndroidComposeCanvasTheme
 import kotlinx.coroutines.delay
@@ -217,9 +220,10 @@ class TreeActivity : ComponentActivity() {
                     .fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                TreeCanvas(seed, season)
+                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                    TreeCanvas(seed, season)
+                }
             }
-
 
             Column {
                 Button(onClick = {
