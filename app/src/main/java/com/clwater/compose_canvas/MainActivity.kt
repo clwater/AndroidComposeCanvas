@@ -12,13 +12,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.clwater.compose_canvas.bezier.BezierActivity
 import com.clwater.compose_canvas.clap.ClapActivity
+import com.clwater.compose_canvas.shape.ShapeActivity
 import com.clwater.compose_canvas.sun_moon.Canvas1Activity
 import com.clwater.compose_canvas.tree.TreeActivity
 import com.clwater.compose_canvas.ui.theme.AndroidComposeCanvasTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-//        TreeActivity.start(this@MainActivity)
+        ShapeActivity.start(this@MainActivity)
         super.onCreate(savedInstanceState)
         setContent {
             AndroidComposeCanvasTheme {
@@ -43,6 +44,9 @@ class MainActivity : ComponentActivity() {
                         }
                         Button(onClick = { TreeActivity.start(this@MainActivity) }) {
                             Text(text = "Tree")
+                        }
+                        Button(onClick = { ShapeActivity.start(this@MainActivity) }) {
+                            Text(text ="Shape")
                         }
                     }
                 }

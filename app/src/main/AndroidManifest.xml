@@ -26,6 +26,7 @@
         <activity android:name=".bezier.BezierActivity"/>
         <activity android:name=".clap.ClapActivity"/>
         <activity android:name=".tree.TreeActivity"/>
+        <activity android:name=".shape.ShapeActivity"/>
     </application>
 
 </manifest>
