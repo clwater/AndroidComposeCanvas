@@ -34,8 +34,8 @@ class ShapeActivity: ComponentActivity() {
                     color = MaterialTheme.colorScheme.background,
                 ) {
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-                        ShapeComposable()
-//                        GradientAlongPathAnimation()
+//                        ShapeComposable()
+                        GradientAlongPathAnimation()
                     }
                 }
             }
