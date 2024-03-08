@@ -2,7 +2,6 @@ package com.clwater.compose_canvas.shape
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -12,7 +11,6 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,7 +22,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
@@ -55,7 +52,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -142,8 +138,8 @@ class ShapeActivity : ComponentActivity() {
                 }
             }
 
-            RoundedPolygonAdjust(model.startPolygon, screenWidth / 3f + 8.dp, colors[6])
-            RoundedPolygonAdjust(model.endPolygon, screenWidth / 3f + 8.dp, colors[7])
+            RoundedPolygonAdjust(true, screenWidth / 3f + 8.dp, colors[6])
+            RoundedPolygonAdjust(false, screenWidth / 3f + 8.dp, colors[7])
             AnimationRoundPolygon()
         }
 
@@ -154,17 +150,14 @@ class ShapeActivity : ComponentActivity() {
         val configuration = LocalConfiguration.current
         val screenWidth = configuration.screenWidthDp.dp
 
-        val shapeA = remember {
+        var shapeStart = remember {
             getRoundPolygonAnimation(model.startPolygon)
 
         }
-        val shapeB = remember {
+        var shapeEnd = remember {
             getRoundPolygonAnimation(model.endPolygon)
         }
 
-        LaunchedEffect(model.startPolygon){
-            Log.d("clwater", "AnimationRoundPolygon: ${model.startPolygon.type.value}")
-        }
 
         val infiniteTransition = rememberInfiniteTransition("infinite outline movement")
         val animatedProgress = infiniteTransition.animateFloat(
@@ -185,6 +178,28 @@ class ShapeActivity : ComponentActivity() {
             ),
             label = "animatedMorphProgress"
         )
+
+
+        val shape = remember {
+            mutableStateOf(
+                CustomRotatingMorphShape(
+                    Morph(shapeStart, shapeEnd),
+                    animatedProgress.value,
+                    animatedRotation.value
+                )
+            )
+        }
+
+        LaunchedEffect(model.startPolygon.type.value, model.endPolygon.type.value, animatedProgress.value) {
+            shapeStart = getRoundPolygonAnimation(model.startPolygon)
+            shapeEnd = getRoundPolygonAnimation(model.endPolygon)
+            shape.value = CustomRotatingMorphShape(
+                Morph(shapeStart, shapeEnd),
+                animatedProgress.value,
+                animatedRotation.value
+            )
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -195,22 +210,14 @@ class ShapeActivity : ComponentActivity() {
                 painter = painterResource(id = R.drawable.avatar),
                 contentDescription = "",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .clip(
-                        CustomRotatingMorphShape(
-                            Morph(shapeA, shapeB),
-                            animatedProgress.value,
-                            animatedRotation.value
-                        )
-                    )
-                    .size(screenWidth / 3f)
+                modifier = Modifier.clip(shape.value).size(screenWidth / 3f)
             )
         }
     }
 
     @Composable
     fun RoundedPolygonAdjust(
-        usedPolygon: RoundedPolygonModel,
+        isStart: Boolean,
         height: Dp,
         color: Color,
     ) {
@@ -228,7 +235,7 @@ class ShapeActivity : ComponentActivity() {
                     .width(height)
                     .drawWithCache {
                         val roundedPolygon = getRoundPolygon(
-                            usedPolygon,
+                            if (isStart) model.startPolygon else model.endPolygon,
                             size.width / 2f
                         )
                         val roundedPolygonPath = roundedPolygon.cubics
@@ -243,15 +250,14 @@ class ShapeActivity : ComponentActivity() {
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(10.dp),
                 onClick = { showDropdownMenu.value = true }) {
-                Text(text = usedPolygon.type.value.getTypeName())
+                Text(text = (if (isStart) model.startPolygon else model.endPolygon).type.value.getTypeName())
                 DropdownMenu(
                     expanded = showDropdownMenu.value, onDismissRequest = {
                         showDropdownMenu.value = false
                     }) {
                     RoundedPolygonType.values().forEach {
                         DropdownMenuItem(onClick = {
-                            model.startPolygon.type.value = it
-//                            usedPolygon.value.type = it
+                            (if (isStart) model.startPolygon else model.endPolygon).type.value = it
                         },
                             text = { Text(text = it.getTypeName()) })
                     }
@@ -418,14 +424,6 @@ class ShapeActivity : ComponentActivity() {
             return Outline.Generic(path)
         }
     }
-
-
-    @Composable
-    fun Dp.dpToPx() = with(LocalDensity.current) { this@dpToPx.toPx() }
-
-
-    @Composable
-    fun Int.pxToDp() = with(LocalDensity.current) { this@pxToDp.toDp() }
 
     fun List<Cubic>.toPath(path: Path = Path(), scale: Float = 1f): Path {
         path.rewind()
