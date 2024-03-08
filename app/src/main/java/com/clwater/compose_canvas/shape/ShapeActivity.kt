@@ -2,14 +2,17 @@ package com.clwater.compose_canvas.shape
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,15 +22,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
@@ -46,6 +55,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,6 +68,7 @@ import androidx.graphics.shapes.pill
 import androidx.graphics.shapes.pillStar
 import androidx.graphics.shapes.rectangle
 import androidx.graphics.shapes.star
+import androidx.lifecycle.ViewModel
 import com.clwater.compose_canvas.R
 import com.clwater.compose_canvas.shape.tmp.toComposePath
 import com.clwater.compose_canvas.ui.theme.AndroidComposeCanvasTheme
@@ -86,20 +97,19 @@ class ShapeActivity : ComponentActivity() {
         }
     }
 
+    class ShapeViewModel : ViewModel(){
+        var startPolygon = RoundedPolygonModel(mutableStateOf(RoundedPolygonType.Common))
+        var endPolygon = RoundedPolygonModel(mutableStateOf(RoundedPolygonType.STAR))
+    }
+
+    private val model by viewModels<ShapeViewModel>()
+
     @Composable
     fun ShapeCustoms() {
         val configuration = LocalConfiguration.current
         val screenWidth = configuration.screenWidthDp.dp
         val itemSize: Dp = (screenWidth - 8.dp - 2.dp * 2 * 6) / 6f
         val boxSize: Dp = screenWidth / 6f
-
-        val startPolygon = remember {
-            mutableStateOf(RoundedPolygonModel())
-        }
-
-        val endPolygon = remember {
-            mutableStateOf(RoundedPolygonModel(mutableStateOf(RoundedPolygonType.STAR)))
-        }
 
         Column(modifier = Modifier.padding(4.dp)) {
             Box(
@@ -132,36 +142,30 @@ class ShapeActivity : ComponentActivity() {
                 }
             }
 
-            RoundedPolygonAdjust(startPolygon, screenWidth / 3f + 8.dp, colors[6])
-            RoundedPolygonAdjust(endPolygon, screenWidth / 3f + 8.dp, colors[7])
-            AnimationRoundPolygon(startPolygon, endPolygon)
+            RoundedPolygonAdjust(model.startPolygon, screenWidth / 3f + 8.dp, colors[6])
+            RoundedPolygonAdjust(model.endPolygon, screenWidth / 3f + 8.dp, colors[7])
+            AnimationRoundPolygon()
         }
 
     }
 
     @Composable
-    fun AnimationRoundPolygon(
-        startPolygon: MutableState<RoundedPolygonModel>,
-        endPolygon: MutableState<RoundedPolygonModel>,
-    ) {
+    fun AnimationRoundPolygon() {
         val configuration = LocalConfiguration.current
         val screenWidth = configuration.screenWidthDp.dp
+
         val shapeA = remember {
-            mutableStateOf(
-                getRoundPolygonAnimation(startPolygon.value)
-            )
+            getRoundPolygonAnimation(model.startPolygon)
 
         }
         val shapeB = remember {
-            mutableStateOf(
-                getRoundPolygonAnimation(endPolygon.value)
-            )
-
+            getRoundPolygonAnimation(model.endPolygon)
         }
 
-        val morph = remember {
-            Morph(shapeA.value, shapeB.value)
+        LaunchedEffect(model.startPolygon){
+            Log.d("clwater", "AnimationRoundPolygon: ${model.startPolygon.type.value}")
         }
+
         val infiniteTransition = rememberInfiniteTransition("infinite outline movement")
         val animatedProgress = infiniteTransition.animateFloat(
             initialValue = 0f,
@@ -182,7 +186,10 @@ class ShapeActivity : ComponentActivity() {
             label = "animatedMorphProgress"
         )
         Box(
-            modifier = Modifier.fillMaxWidth().height(screenWidth / 3f),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(screenWidth / 3f)
+            ,
         ) {
             Image(
                 painter = painterResource(id = R.drawable.avatar),
@@ -191,7 +198,7 @@ class ShapeActivity : ComponentActivity() {
                 modifier = Modifier
                     .clip(
                         CustomRotatingMorphShape(
-                            morph,
+                            Morph(shapeA, shapeB),
                             animatedProgress.value,
                             animatedRotation.value
                         )
@@ -203,28 +210,60 @@ class ShapeActivity : ComponentActivity() {
 
     @Composable
     fun RoundedPolygonAdjust(
-        startPolygon: MutableState<RoundedPolygonModel>,
+        usedPolygon: RoundedPolygonModel,
         height: Dp,
-        color: Color
-
+        color: Color,
     ) {
-        Box(
+        val showDropdownMenu = remember {
+            mutableStateOf(false)
+        }
+
+        Row(
             modifier = Modifier
-                .height(height)
-                .padding(vertical = 4.dp)
-                .drawWithCache {
-                    val roundedPolygon = getRoundPolygon(
-                        startPolygon.value,
-                        size.width / 6f
-                    )
-                    val roundedPolygonPath = roundedPolygon.cubics
-                        .toPath()
-                    onDrawBehind {
-                        drawPath(roundedPolygonPath, color = color)
+                .padding(vertical = 4.dp, horizontal = 4.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .height(height)
+                    .width(height)
+                    .drawWithCache {
+                        val roundedPolygon = getRoundPolygon(
+                            usedPolygon,
+                            size.width / 2f
+                        )
+                        val roundedPolygonPath = roundedPolygon.cubics
+                            .toPath()
+                        onDrawBehind {
+                            drawPath(roundedPolygonPath, color = color)
+                        }
+                    }
+            )
+
+            OutlinedButton(
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(10.dp),
+                onClick = { showDropdownMenu.value = true }) {
+                Text(text = usedPolygon.type.value.getTypeName())
+                DropdownMenu(
+                    expanded = showDropdownMenu.value, onDismissRequest = {
+                        showDropdownMenu.value = false
+                    }) {
+                    RoundedPolygonType.values().forEach {
+                        DropdownMenuItem(onClick = {
+                            model.startPolygon.type.value = it
+//                            usedPolygon.value.type = it
+                        },
+                            text = { Text(text = it.getTypeName()) })
                     }
                 }
-                .fillMaxWidth()
-        )
+            }
+
+
+
+        }
+
+
+
     }
 
     fun getRoundPolygonAnimation(model: RoundedPolygonModel): RoundedPolygon{
