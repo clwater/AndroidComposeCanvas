@@ -12,6 +12,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,6 +27,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,6 +48,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -67,6 +70,9 @@ import androidx.lifecycle.ViewModel
 import com.clwater.compose_canvas.R
 import com.clwater.compose_canvas.shape.tmp.toComposePath
 import com.clwater.compose_canvas.ui.theme.AndroidComposeCanvasTheme
+import java.math.RoundingMode
+import java.text.DecimalFormat
+import kotlin.math.roundToInt
 
 class ShapeActivity : ComponentActivity() {
     companion object {
@@ -92,10 +98,12 @@ class ShapeActivity : ComponentActivity() {
         }
     }
 
-    class ShapeViewModel : ViewModel(){
+    class ShapeViewModel : ViewModel() {
         var itemSize = 0.dp
-        var startPolygon = RoundedPolygonModel(mutableStateOf(RoundedPolygonType.Common))
-        var endPolygon = RoundedPolygonModel(mutableStateOf(RoundedPolygonType.STAR))
+        var startPolygon =
+            RoundedPolygonModel(mutableStateOf(RoundedPolygonType.Common), CommonParam(), CircleParam())
+        var endPolygon = RoundedPolygonModel(mutableStateOf(RoundedPolygonType.STAR), CommonParam(), CircleParam())
+
     }
 
     private val model by viewModels<ShapeViewModel>()
@@ -162,7 +170,7 @@ class ShapeActivity : ComponentActivity() {
 
         val infiniteTransition = rememberInfiniteTransition("infinite outline movement")
         val animatedProgress = infiniteTransition.animateFloat(
-            initialValue = 0f,
+            initialValue = 0.5f,
             targetValue = 1f,
             animationSpec = infiniteRepeatable(
                 tween(2000, easing = LinearEasing),
@@ -191,12 +199,17 @@ class ShapeActivity : ComponentActivity() {
             )
         }
 
-        LaunchedEffect(model.startPolygon.type.value, model.endPolygon.type.value, animatedProgress.value) {
+        LaunchedEffect(
+            model.startPolygon.type.value,
+            model.endPolygon.type.value,
+            animatedProgress.value
+        ) {
             shapeStart = getRoundPolygonAnimation(model.startPolygon)
             shapeEnd = getRoundPolygonAnimation(model.endPolygon)
             shape.value = CustomRotatingMorphShape(
                 Morph(shapeStart, shapeEnd),
-                animatedProgress.value,
+//                animatedProgress.value,
+                0f,
                 animatedRotation.value
             )
         }
@@ -204,14 +217,15 @@ class ShapeActivity : ComponentActivity() {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(screenWidth / 3f )
-            ,
+                .height(screenWidth / 3f),
         ) {
             Image(
                 painter = painterResource(id = R.drawable.avatar),
                 contentDescription = "",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.clip(shape.value).size(model.itemSize)
+                modifier = Modifier
+                    .clip(shape.value)
+                    .size(model.itemSize)
             )
         }
     }
@@ -228,60 +242,117 @@ class ShapeActivity : ComponentActivity() {
 
         Row(
             modifier = Modifier
-                .padding(vertical = 4.dp, horizontal = 4.dp)
+                .padding(4.dp)
+                .border(width = 1.dp, color = color, shape = RoundedCornerShape(10.dp))
+                .padding(4.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .height(height)
-                    .width(model.itemSize)
-                    .drawWithCache {
-                        val roundedPolygon = getRoundPolygon(
-                            if (isStart) model.startPolygon else model.endPolygon,
-                            size.width / 2f
-                        )
-                        val roundedPolygonPath = roundedPolygon.cubics
-                            .toPath()
-                        onDrawBehind {
-                            drawPath(roundedPolygonPath, color = color)
+            Column(modifier = Modifier.width(model.itemSize)) {
+                Box(
+                    modifier = Modifier
+                        .height(height)
+                        .fillMaxWidth()
+                        .drawWithCache {
+                            val roundedPolygon = getRoundPolygon(
+                                if (isStart) model.startPolygon else model.endPolygon,
+                                size.width / 2f
+                            )
+                            val roundedPolygonPath = roundedPolygon.cubics
+                                .toPath()
+                            onDrawBehind {
+                                drawPath(roundedPolygonPath, color = color)
+                            }
+                        }
+                )
+
+                OutlinedButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    onClick = { showDropdownMenu.value = true }) {
+                    Text(text = (if (isStart) model.startPolygon else model.endPolygon).type.value.getTypeName())
+                    DropdownMenu(
+                        expanded = showDropdownMenu.value, onDismissRequest = {
+                            showDropdownMenu.value = false
+                        }) {
+                        RoundedPolygonType.values().forEach {
+                            DropdownMenuItem(onClick = {
+                                (if (isStart) model.startPolygon else model.endPolygon).type.value =
+                                    it
+                            },
+                                text = { Text(text = it.getTypeName()) })
                         }
                     }
-            )
-
-            OutlinedButton(
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(10.dp),
-                onClick = { showDropdownMenu.value = true }) {
-                Text(text = (if (isStart) model.startPolygon else model.endPolygon).type.value.getTypeName())
-                DropdownMenu(
-                    expanded = showDropdownMenu.value, onDismissRequest = {
-                        showDropdownMenu.value = false
-                    }) {
-                    RoundedPolygonType.values().forEach {
-                        DropdownMenuItem(onClick = {
-                            (if (isStart) model.startPolygon else model.endPolygon).type.value = it
-                        },
-                            text = { Text(text = it.getTypeName()) })
-                    }
                 }
+
             }
 
 
+            Column {
+                val roundingRadiusPx = model.itemSize.dpToPx()
+                when((if (isStart) model.startPolygon else model.endPolygon).type.value){
+                    RoundedPolygonType.Common ->{
+                        Text("numVertices: ${(if (isStart) model.startPolygon else model.endPolygon).commonParam.numVertices.value}")
+                        Slider(
+                            value = (if (isStart) model.startPolygon else model.endPolygon).commonParam.numVertices.value.toFloat(),
+                            steps = 0,
+                            valueRange = 3f..12f,
+                            onValueChange = {
+                                (if (isStart) model.startPolygon else model.endPolygon).commonParam.numVertices.value =
+                                    it.roundToInt()
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Text(text = "rounding(Radius): ${(if (isStart) model.startPolygon else model.endPolygon).commonParam.roundingRadiusAnimation.value}")
+                        Slider(
+                            value = (if (isStart) model.startPolygon else model.endPolygon).commonParam.roundingRadiusAnimation.value,
+                            steps = 0,
+                            valueRange = 0f..1f,
+                            onValueChange = {
+                                (if (isStart) model.startPolygon else model.endPolygon).commonParam.roundingRadius.value =  roundingRadiusPx /2f * it
+                                (if (isStart) model.startPolygon else model.endPolygon).commonParam.roundingRadiusAnimation.value = get2Float(it)  },
+                            modifier = Modifier.fillMaxWidth()
+                        )
 
+                        Text(text = "rounding(Smoothing): ${(if (isStart) model.startPolygon else model.endPolygon).commonParam.roundingSmoothing.value}")
+                        Slider(
+                            value = (if (isStart) model.startPolygon else model.endPolygon).commonParam.roundingSmoothing.value,
+                            steps = 0,
+                            onValueChange = {
+                                (if (isStart) model.startPolygon else model.endPolygon).commonParam.roundingSmoothing.value = get2Float(it) },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                    RoundedPolygonType.CIRCLE -> {
+                        Text("numVertices: ${(if (isStart) model.startPolygon else model.endPolygon).circleParam.numVertices.value}")
+                        Slider(
+                            value = (if (isStart) model.startPolygon else model.endPolygon).circleParam.numVertices.value.toFloat(),
+                            steps = 0,
+                            valueRange = 3f..8f,
+                            onValueChange = {
+                                (if (isStart) model.startPolygon else model.endPolygon).circleParam.numVertices.value =
+                                    it.roundToInt()
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                    else -> {}
+                }
+
+
+            }
         }
-
-
-
     }
 
-    fun getRoundPolygonAnimation(model: RoundedPolygonModel): RoundedPolygon{
-        return when (model.type.value) {
+    fun getRoundPolygonAnimation(rpundedModel: RoundedPolygonModel): RoundedPolygon {
+        return when (rpundedModel.type.value) {
             RoundedPolygonType.Common -> RoundedPolygon(
-                numVertices = 12,
-                rounding = CornerRounding(0.2f),
-                )
+                numVertices = rpundedModel.commonParam.numVertices.value,
+                rounding = CornerRounding(
+                    radius = rpundedModel.commonParam.roundingRadiusAnimation.value,
+                    smoothing = rpundedModel.commonParam.roundingSmoothing.value),
+            )
 
             RoundedPolygonType.CIRCLE -> RoundedPolygon.circle(
-                numVertices = 5,
+                numVertices = rpundedModel.circleParam.numVertices.value,
             )
 
             RoundedPolygonType.PILL -> RoundedPolygon.pill(
@@ -319,22 +390,31 @@ class ShapeActivity : ComponentActivity() {
     }
 
     fun getRoundPolygon(model: RoundedPolygonModel, radius: Float): RoundedPolygon {
-        return getRoundPolygon(model.type.value, radius,Offset(radius, radius))
+        return getRoundPolygon(model, radius, Offset(radius, radius))
     }
 
     fun getRoundPolygon(type: RoundedPolygonType, radius: Float, offset: Offset): RoundedPolygon {
-        return when (type) {
+        return getRoundPolygon(RoundedPolygonModel(
+            mutableStateOf(type),
+            circleParam = CircleParam()
+        ), radius, offset)
+    }
+
+    fun getRoundPolygon(roundedModel: RoundedPolygonModel, radius: Float, offset: Offset): RoundedPolygon {
+        return when (roundedModel.type.value) {
             RoundedPolygonType.Common -> RoundedPolygon(
-                numVertices = 12,
-                rounding = CornerRounding(0.2f),
+                numVertices = roundedModel.commonParam.numVertices.value,
+                rounding = CornerRounding(radius = roundedModel.commonParam.roundingRadius.value ,
+                                        smoothing = roundedModel.commonParam.roundingSmoothing.value
+                    ),
                 radius = radius,
                 centerX = offset.x,
                 centerY = offset.y,
 
-            )
+                )
 
             RoundedPolygonType.CIRCLE -> RoundedPolygon.circle(
-                numVertices = 5,
+                numVertices = roundedModel.circleParam.numVertices.value,
                 radius = radius,
                 centerX = offset.x,
                 centerY = offset.y
@@ -386,7 +466,38 @@ class ShapeActivity : ComponentActivity() {
         Color(0xFFFF5722),
     )
 
-    data class RoundedPolygonModel(var type: MutableState<RoundedPolygonType> = mutableStateOf(RoundedPolygonType.Common))
+
+    fun get2Float(usedFloat: Float): Float{
+        val df = DecimalFormat("#.00")
+        df.roundingMode = RoundingMode.CEILING
+        return df.format(usedFloat).toFloat()
+    }
+
+    @Composable
+    fun Dp.dpToPx() = with(LocalDensity.current) { this@dpToPx.toPx() }
+
+
+    @Composable
+    fun Int.pxToDp() = with(LocalDensity.current) { this@pxToDp.toDp() }
+
+    data class RoundedPolygonModel(
+        var type: MutableState<RoundedPolygonType> = mutableStateOf(
+            RoundedPolygonType.Common
+        ),
+        val commonParam: CommonParam = CommonParam(),
+        val circleParam: CircleParam = CircleParam()
+    )
+
+    data class CommonParam(
+        var numVertices: MutableState<Int> = mutableStateOf(7),
+        var roundingRadius: MutableState<Float> = mutableStateOf(0f),
+        var roundingRadiusAnimation: MutableState<Float> = mutableStateOf(0f),
+        var roundingSmoothing: MutableState<Float> = mutableStateOf(0.2f)
+    )
+
+    data class CircleParam(
+        var numVertices: MutableState<Int> = mutableStateOf(7),
+    )
 
     enum class RoundedPolygonType(private val typeName: String) {
         Common("Common"),
