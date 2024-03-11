@@ -46,7 +46,6 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -94,6 +93,7 @@ class ShapeActivity : ComponentActivity() {
     }
 
     class ShapeViewModel : ViewModel(){
+        var itemSize = 0.dp
         var startPolygon = RoundedPolygonModel(mutableStateOf(RoundedPolygonType.Common))
         var endPolygon = RoundedPolygonModel(mutableStateOf(RoundedPolygonType.STAR))
     }
@@ -104,8 +104,9 @@ class ShapeActivity : ComponentActivity() {
     fun ShapeCustoms() {
         val configuration = LocalConfiguration.current
         val screenWidth = configuration.screenWidthDp.dp
-        val itemSize: Dp = (screenWidth - 8.dp - 2.dp * 2 * 6) / 6f
+        val smallItemSize: Dp = (screenWidth - 8.dp - 2.dp * 2 * 6) / 6f
         val boxSize: Dp = screenWidth / 6f
+        model.itemSize = screenWidth / 3f
 
         Column(modifier = Modifier.padding(4.dp)) {
             Box(
@@ -115,9 +116,9 @@ class ShapeActivity : ComponentActivity() {
                             for (i in 0 until RoundedPolygonType.values().size) {
                                 val shape = getRoundPolygon(
                                     RoundedPolygonType.values()[i],
-                                    itemSize.toPx() / 2f,
+                                    smallItemSize.toPx() / 2f,
                                     Offset(
-                                        (boxSize.toPx() - itemSize.toPx() / 40f) * i + boxSize.toPx() / 2f,
+                                        (boxSize.toPx() - smallItemSize.toPx() / 40f) * i + boxSize.toPx() / 2f,
                                         boxSize.toPx() / 2f
                                     )
                                 )
@@ -203,14 +204,14 @@ class ShapeActivity : ComponentActivity() {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(screenWidth / 3f)
+                .height(screenWidth / 3f )
             ,
         ) {
             Image(
                 painter = painterResource(id = R.drawable.avatar),
                 contentDescription = "",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.clip(shape.value).size(screenWidth / 3f)
+                modifier = Modifier.clip(shape.value).size(model.itemSize)
             )
         }
     }
@@ -232,7 +233,7 @@ class ShapeActivity : ComponentActivity() {
             Box(
                 modifier = Modifier
                     .height(height)
-                    .width(height)
+                    .width(model.itemSize)
                     .drawWithCache {
                         val roundedPolygon = getRoundPolygon(
                             if (isStart) model.startPolygon else model.endPolygon,
