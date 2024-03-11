@@ -810,6 +810,7 @@ class Canvas1Activity : ComponentActivity() {
     }
 
     /**
+     * 绘制背景
      * Background
      */
     @Composable
