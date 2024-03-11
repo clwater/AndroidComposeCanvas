@@ -2,6 +2,7 @@ package com.clwater.compose_canvas.shape
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -101,8 +102,16 @@ class ShapeActivity : ComponentActivity() {
     class ShapeViewModel : ViewModel() {
         var itemSize = 0.dp
         var startPolygon =
-            RoundedPolygonModel(mutableStateOf(RoundedPolygonType.Common), CommonParam(), CircleParam())
-        var endPolygon = RoundedPolygonModel(mutableStateOf(RoundedPolygonType.STAR), CommonParam(), CircleParam())
+            RoundedPolygonModel(
+                mutableStateOf(RoundedPolygonType.Common),
+                CommonParam(),
+                CircleParam()
+            )
+        var endPolygon = RoundedPolygonModel(
+            mutableStateOf(RoundedPolygonType.STAR),
+            CommonParam(),
+            CircleParam()
+        )
 
     }
 
@@ -114,7 +123,24 @@ class ShapeActivity : ComponentActivity() {
         val screenWidth = configuration.screenWidthDp.dp
         val smallItemSize: Dp = (screenWidth - 8.dp - 2.dp * 2 * 6) / 6f
         val boxSize: Dp = screenWidth / 6f
+
         model.itemSize = screenWidth / 3f
+        val itemSizePx = model.itemSize.dpToPx()
+
+        LaunchedEffect(Unit){
+            model.startPolygon.pillParam.widthAnimation.value = 1f
+            model.startPolygon.pillParam.width.value =  itemSizePx / 2f  * model.startPolygon.pillParam.widthAnimation.value
+            model.startPolygon.pillParam.heightAnimation.value = 0.5f
+            model.startPolygon.pillParam.height.value = itemSizePx / 2f  * model.startPolygon.pillParam.heightAnimation.value
+
+            model.endPolygon.pillParam.widthAnimation.value = 1f
+            model.endPolygon.pillParam.width.value = itemSizePx / 2f  * model.startPolygon.pillParam.widthAnimation.value
+            model.endPolygon.pillParam.heightAnimation.value = 0.5f
+            model.endPolygon.pillParam.height.value = itemSizePx / 2f  * model.startPolygon.pillParam.heightAnimation.value
+        }
+
+
+
 
         Column(modifier = Modifier.padding(4.dp)) {
             Box(
@@ -288,8 +314,8 @@ class ShapeActivity : ComponentActivity() {
 
             Column {
                 val roundingRadiusPx = model.itemSize.dpToPx()
-                when((if (isStart) model.startPolygon else model.endPolygon).type.value){
-                    RoundedPolygonType.Common ->{
+                when ((if (isStart) model.startPolygon else model.endPolygon).type.value) {
+                    RoundedPolygonType.Common -> {
                         Text("numVertices: ${(if (isStart) model.startPolygon else model.endPolygon).commonParam.numVertices.value}")
                         Slider(
                             value = (if (isStart) model.startPolygon else model.endPolygon).commonParam.numVertices.value.toFloat(),
@@ -307,8 +333,11 @@ class ShapeActivity : ComponentActivity() {
                             steps = 0,
                             valueRange = 0f..1f,
                             onValueChange = {
-                                (if (isStart) model.startPolygon else model.endPolygon).commonParam.roundingRadius.value =  roundingRadiusPx /2f * it
-                                (if (isStart) model.startPolygon else model.endPolygon).commonParam.roundingRadiusAnimation.value = get2Float(it)  },
+                                (if (isStart) model.startPolygon else model.endPolygon).commonParam.roundingRadius.value =
+                                    roundingRadiusPx / 2f * it
+                                (if (isStart) model.startPolygon else model.endPolygon).commonParam.roundingRadiusAnimation.value =
+                                    get2Float(it)
+                            },
                             modifier = Modifier.fillMaxWidth()
                         )
 
@@ -317,10 +346,13 @@ class ShapeActivity : ComponentActivity() {
                             value = (if (isStart) model.startPolygon else model.endPolygon).commonParam.roundingSmoothing.value,
                             steps = 0,
                             onValueChange = {
-                                (if (isStart) model.startPolygon else model.endPolygon).commonParam.roundingSmoothing.value = get2Float(it) },
+                                (if (isStart) model.startPolygon else model.endPolygon).commonParam.roundingSmoothing.value =
+                                    get2Float(it)
+                            },
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
+
                     RoundedPolygonType.CIRCLE -> {
                         Text("numVertices: ${(if (isStart) model.startPolygon else model.endPolygon).circleParam.numVertices.value}")
                         Slider(
@@ -334,6 +366,43 @@ class ShapeActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
+
+                    RoundedPolygonType.PILL -> {
+                        Text("Smoothing: ${(if (isStart) model.startPolygon else model.endPolygon).pillParam.smoothing.value}")
+                        Slider(
+                            value = (if (isStart) model.startPolygon else model.endPolygon).pillParam.smoothing.value,
+                            steps = 0,
+                            onValueChange = {
+                                (if (isStart) model.startPolygon else model.endPolygon).pillParam.smoothing.value =
+                                    get2Float(it)
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Text("Width: ${(if (isStart) model.startPolygon else model.endPolygon).pillParam.widthAnimation.value}")
+                        Slider(
+                            value = (if (isStart) model.startPolygon else model.endPolygon).pillParam.widthAnimation.value,
+                            steps = 0,
+                            valueRange = 0.01f..1f,
+                            onValueChange = {
+                                (if (isStart) model.startPolygon else model.endPolygon).pillParam.widthAnimation.value = get2Float(it)
+                                (if (isStart) model.startPolygon else model.endPolygon).pillParam.width.value = roundingRadiusPx / 2f * it
+
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Text("Height: ${(if (isStart) model.startPolygon else model.endPolygon).pillParam.heightAnimation.value}")
+                        Slider(
+                            value = (if (isStart) model.startPolygon else model.endPolygon).pillParam.heightAnimation.value,
+                            steps = 0,
+                            valueRange = 0.01f..1f,
+                            onValueChange = {
+                                (if (isStart) model.startPolygon else model.endPolygon).pillParam.heightAnimation.value = get2Float(it)
+                                (if (isStart) model.startPolygon else model.endPolygon).pillParam.height.value = roundingRadiusPx / 2f * it
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
                     else -> {}
                 }
 
@@ -342,25 +411,24 @@ class ShapeActivity : ComponentActivity() {
         }
     }
 
-    fun getRoundPolygonAnimation(rpundedModel: RoundedPolygonModel): RoundedPolygon {
-        return when (rpundedModel.type.value) {
+    fun getRoundPolygonAnimation(roundedModel: RoundedPolygonModel): RoundedPolygon {
+        return when (roundedModel.type.value) {
             RoundedPolygonType.Common -> RoundedPolygon(
-                numVertices = rpundedModel.commonParam.numVertices.value,
+                numVertices = roundedModel.commonParam.numVertices.value,
                 rounding = CornerRounding(
-                    radius = rpundedModel.commonParam.roundingRadiusAnimation.value,
-                    smoothing = rpundedModel.commonParam.roundingSmoothing.value),
+                    radius = roundedModel.commonParam.roundingRadiusAnimation.value,
+                    smoothing = roundedModel.commonParam.roundingSmoothing.value
+                ),
             )
 
             RoundedPolygonType.CIRCLE -> RoundedPolygon.circle(
-                numVertices = rpundedModel.circleParam.numVertices.value,
+                numVertices = roundedModel.circleParam.numVertices.value,
             )
 
             RoundedPolygonType.PILL -> RoundedPolygon.pill(
-//                width = radius,
-//                height = radius / 2,
-                smoothing = 100f,
-//                centerX = offset.x,
-//                centerY = offset.y
+                width = roundedModel.pillParam.widthAnimation.value,
+                height = roundedModel.pillParam.heightAnimation.value,
+                smoothing = roundedModel.pillParam.smoothing.value,
             )
 
             RoundedPolygonType.PILL_STAR -> RoundedPolygon.pillStar(
@@ -394,19 +462,34 @@ class ShapeActivity : ComponentActivity() {
     }
 
     fun getRoundPolygon(type: RoundedPolygonType, radius: Float, offset: Offset): RoundedPolygon {
-        return getRoundPolygon(RoundedPolygonModel(
-            mutableStateOf(type),
-            circleParam = CircleParam()
-        ), radius, offset)
+        return getRoundPolygon(
+            RoundedPolygonModel(
+                mutableStateOf(type),
+            ), radius, offset, true
+        )
     }
 
-    fun getRoundPolygon(roundedModel: RoundedPolygonModel, radius: Float, offset: Offset): RoundedPolygon {
+    fun getRoundPolygon(
+        roundedModel: RoundedPolygonModel,
+        radius: Float,
+        offset: Offset
+    ): RoundedPolygon {
+        return getRoundPolygon(roundedModel, radius, offset, false)
+    }
+
+    fun getRoundPolygon(
+        roundedModel: RoundedPolygonModel,
+        radius: Float,
+        offset: Offset,
+        isFixed: Boolean
+    ): RoundedPolygon {
         return when (roundedModel.type.value) {
             RoundedPolygonType.Common -> RoundedPolygon(
                 numVertices = roundedModel.commonParam.numVertices.value,
-                rounding = CornerRounding(radius = roundedModel.commonParam.roundingRadius.value ,
-                                        smoothing = roundedModel.commonParam.roundingSmoothing.value
-                    ),
+                rounding = CornerRounding(
+                    radius = roundedModel.commonParam.roundingRadius.value,
+                    smoothing = roundedModel.commonParam.roundingSmoothing.value
+                ),
                 radius = radius,
                 centerX = offset.x,
                 centerY = offset.y,
@@ -421,9 +504,9 @@ class ShapeActivity : ComponentActivity() {
             )
 
             RoundedPolygonType.PILL -> RoundedPolygon.pill(
-                width = radius,
-                height = radius / 2,
-                smoothing = 100f,
+                width = if (isFixed) radius else roundedModel.pillParam.width.value,
+                height = if (isFixed) radius else roundedModel.pillParam.height.value,
+                smoothing = roundedModel.pillParam.smoothing.value,
                 centerX = offset.x,
                 centerY = offset.y
             )
@@ -467,7 +550,7 @@ class ShapeActivity : ComponentActivity() {
     )
 
 
-    fun get2Float(usedFloat: Float): Float{
+    fun get2Float(usedFloat: Float): Float {
         val df = DecimalFormat("#.00")
         df.roundingMode = RoundingMode.CEILING
         return df.format(usedFloat).toFloat()
@@ -485,7 +568,8 @@ class ShapeActivity : ComponentActivity() {
             RoundedPolygonType.Common
         ),
         val commonParam: CommonParam = CommonParam(),
-        val circleParam: CircleParam = CircleParam()
+        val circleParam: CircleParam = CircleParam(),
+        val pillParam: PillParam = PillParam()
     )
 
     data class CommonParam(
@@ -498,6 +582,15 @@ class ShapeActivity : ComponentActivity() {
     data class CircleParam(
         var numVertices: MutableState<Int> = mutableStateOf(7),
     )
+
+    data class PillParam(
+        val smoothing: MutableState<Float> = mutableStateOf(0f),
+        val width: MutableState<Float> = mutableStateOf(0f),
+        val widthAnimation: MutableState<Float> = mutableStateOf(0f),
+        val height: MutableState<Float> = mutableStateOf(0f),
+        val heightAnimation: MutableState<Float> = mutableStateOf(0f),
+
+        )
 
     enum class RoundedPolygonType(private val typeName: String) {
         Common("Common"),
