@@ -127,27 +127,50 @@ class ShapeActivity : ComponentActivity() {
         model.itemSize = screenWidth / 3f
         val itemSizePx = model.itemSize.dpToPx()
 
-        LaunchedEffect(Unit){
+        LaunchedEffect(Unit) {
             model.startPolygon.pillParam.widthAnimation.value = 1f
-            model.startPolygon.pillParam.width.value =  itemSizePx / 2f  * model.startPolygon.pillParam.widthAnimation.value
+            model.startPolygon.pillParam.width.value =
+                itemSizePx / 2f * model.startPolygon.pillParam.widthAnimation.value
             model.startPolygon.pillParam.heightAnimation.value = 0.5f
-            model.startPolygon.pillParam.height.value = itemSizePx / 2f  * model.startPolygon.pillParam.heightAnimation.value
+            model.startPolygon.pillParam.height.value =
+                itemSizePx / 2f * model.startPolygon.pillParam.heightAnimation.value
 
             model.endPolygon.pillParam.widthAnimation.value = 1f
-            model.endPolygon.pillParam.width.value = itemSizePx / 2f  * model.startPolygon.pillParam.widthAnimation.value
+            model.endPolygon.pillParam.width.value =
+                itemSizePx / 2f * model.startPolygon.pillParam.widthAnimation.value
             model.endPolygon.pillParam.heightAnimation.value = 0.5f
-            model.endPolygon.pillParam.height.value = itemSizePx / 2f  * model.startPolygon.pillParam.heightAnimation.value
+            model.endPolygon.pillParam.height.value =
+                itemSizePx / 2f * model.startPolygon.pillParam.heightAnimation.value
 
 
             model.startPolygon.pillStarParam.widthAnimation.value = 1f
-            model.startPolygon.pillStarParam.width.value =  itemSizePx / 2f  * model.startPolygon.pillStarParam.widthAnimation.value
+            model.startPolygon.pillStarParam.width.value =
+                itemSizePx / 2f * model.startPolygon.pillStarParam.widthAnimation.value
             model.startPolygon.pillStarParam.heightAnimation.value = 0.5f
-            model.startPolygon.pillStarParam.height.value = itemSizePx / 2f  * model.startPolygon.pillStarParam.heightAnimation.value
+            model.startPolygon.pillStarParam.height.value =
+                itemSizePx / 2f * model.startPolygon.pillStarParam.heightAnimation.value
 
             model.endPolygon.pillStarParam.widthAnimation.value = 1f
-            model.endPolygon.pillStarParam.width.value = itemSizePx / 2f  * model.startPolygon.pillStarParam.widthAnimation.value
+            model.endPolygon.pillStarParam.width.value =
+                itemSizePx / 2f * model.startPolygon.pillStarParam.widthAnimation.value
             model.endPolygon.pillStarParam.heightAnimation.value = 0.5f
-            model.endPolygon.pillStarParam.height.value = itemSizePx / 2f  * model.startPolygon.pillStarParam.heightAnimation.value
+            model.endPolygon.pillStarParam.height.value =
+                itemSizePx / 2f * model.startPolygon.pillStarParam.heightAnimation.value
+
+
+            model.startPolygon.rectangleParam.widthAnimation.value = 2f
+            model.startPolygon.rectangleParam.width.value =
+                itemSizePx / 2f * model.startPolygon.rectangleParam.widthAnimation.value
+            model.startPolygon.rectangleParam.heightAnimation.value = 1f
+            model.startPolygon.rectangleParam.height.value =
+                itemSizePx / 2f * model.startPolygon.rectangleParam.heightAnimation.value
+
+            model.endPolygon.rectangleParam.widthAnimation.value = 2f
+            model.endPolygon.rectangleParam.width.value =
+                itemSizePx / 2f * model.startPolygon.rectangleParam.widthAnimation.value
+            model.endPolygon.rectangleParam.heightAnimation.value = 1f
+            model.endPolygon.rectangleParam.height.value =
+                itemSizePx / 2f * model.startPolygon.rectangleParam.heightAnimation.value
 
         }
 
@@ -396,8 +419,10 @@ class ShapeActivity : ComponentActivity() {
                             steps = 0,
                             valueRange = 0.01f..1f,
                             onValueChange = {
-                                (if (isStart) model.startPolygon else model.endPolygon).pillParam.widthAnimation.value = get2Float(it)
-                                (if (isStart) model.startPolygon else model.endPolygon).pillParam.width.value = roundingRadiusPx / 2f * it
+                                (if (isStart) model.startPolygon else model.endPolygon).pillParam.widthAnimation.value =
+                                    get2Float(it)
+                                (if (isStart) model.startPolygon else model.endPolygon).pillParam.width.value =
+                                    roundingRadiusPx / 2f * it
 
                             },
                             modifier = Modifier.fillMaxWidth()
@@ -408,8 +433,10 @@ class ShapeActivity : ComponentActivity() {
                             steps = 0,
                             valueRange = 0.01f..1f,
                             onValueChange = {
-                                (if (isStart) model.startPolygon else model.endPolygon).pillParam.heightAnimation.value = get2Float(it)
-                                (if (isStart) model.startPolygon else model.endPolygon).pillParam.height.value = roundingRadiusPx / 2f * it
+                                (if (isStart) model.startPolygon else model.endPolygon).pillParam.heightAnimation.value =
+                                    get2Float(it)
+                                (if (isStart) model.startPolygon else model.endPolygon).pillParam.height.value =
+                                    roundingRadiusPx / 2f * it
                             },
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -422,7 +449,8 @@ class ShapeActivity : ComponentActivity() {
                             steps = 0,
                             valueRange = 3f..12f,
                             onValueChange = {
-                                (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.numVerticesPerRadius.value = it.roundToInt()
+                                (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.numVerticesPerRadius.value =
+                                    it.roundToInt()
                             },
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -432,7 +460,8 @@ class ShapeActivity : ComponentActivity() {
                             value = (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.innerRadiusRatio.value,
                             steps = 0,
                             onValueChange = {
-                                (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.innerRadiusRatio.value = get2Float(it)
+                                (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.innerRadiusRatio.value =
+                                    get2Float(it)
                             },
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -442,8 +471,10 @@ class ShapeActivity : ComponentActivity() {
                             value = (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.roundingRadiusAnimation.value,
                             steps = 0,
                             onValueChange = {
-                                (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.roundingRadiusAnimation.value = get2Float(it)
-                                (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.roundingRadius.value = roundingRadiusPx / 2f * it
+                                (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.roundingRadiusAnimation.value =
+                                    get2Float(it)
+                                (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.roundingRadius.value =
+                                    roundingRadiusPx / 2f * it
                             },
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -465,13 +496,15 @@ class ShapeActivity : ComponentActivity() {
                             value = (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.innerRoundingRadiusAnimation.value,
                             steps = 0,
                             onValueChange = {
-                                (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.innerRoundingRadiusAnimation.value = get2Float(it)
-                                (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.innerRoundingRadius.value = roundingRadiusPx / 2f * it
+                                (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.innerRoundingRadiusAnimation.value =
+                                    get2Float(it)
+                                (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.innerRoundingRadius.value =
+                                    roundingRadiusPx / 2f * it
                             },
                             modifier = Modifier.fillMaxWidth()
                         )
 
-                        Text(text = "Rounding(Smoothing): ${(if (isStart) model.startPolygon else model.endPolygon).pillStarParam.innerSmoothing.value}")
+                        Text(text = "InnerRounding(Smoothing): ${(if (isStart) model.startPolygon else model.endPolygon).pillStarParam.innerSmoothing.value}")
                         Slider(
                             value = (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.innerSmoothing.value,
                             steps = 0,
@@ -487,7 +520,8 @@ class ShapeActivity : ComponentActivity() {
                             value = (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.vertexSpacing.value,
                             steps = 0,
                             onValueChange = {
-                                (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.vertexSpacing.value = get2Float(it)
+                                (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.vertexSpacing.value =
+                                    get2Float(it)
                             },
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -498,8 +532,10 @@ class ShapeActivity : ComponentActivity() {
                             steps = 0,
                             valueRange = 0.01f..1f,
                             onValueChange = {
-                                (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.widthAnimation.value = get2Float(it)
-                                (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.width.value = roundingRadiusPx / 2f * it
+                                (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.widthAnimation.value =
+                                    get2Float(it)
+                                (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.width.value =
+                                    roundingRadiusPx / 2f * it
 
                             },
                             modifier = Modifier.fillMaxWidth()
@@ -510,8 +546,64 @@ class ShapeActivity : ComponentActivity() {
                             steps = 0,
                             valueRange = 0.01f..1f,
                             onValueChange = {
-                                (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.heightAnimation.value = get2Float(it)
-                                (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.height.value = roundingRadiusPx / 2f * it
+                                (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.heightAnimation.value =
+                                    get2Float(it)
+                                (if (isStart) model.startPolygon else model.endPolygon).pillStarParam.height.value =
+                                    roundingRadiusPx / 2f * it
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                    RoundedPolygonType.RECTANGLE -> {
+                        Text("Rounding(Radius): ${(if (isStart) model.startPolygon else model.endPolygon).rectangleParam.roundingRadiusAnimation.value}")
+                        Slider(
+                            value = (if (isStart) model.startPolygon else model.endPolygon).rectangleParam.roundingRadiusAnimation.value,
+                            steps = 0,
+                            onValueChange = {
+                                (if (isStart) model.startPolygon else model.endPolygon).rectangleParam.roundingRadiusAnimation.value =
+                                    get2Float(it)
+                                (if (isStart) model.startPolygon else model.endPolygon).rectangleParam.roundingRadius.value =
+                                    roundingRadiusPx / 2f * it
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Text(text = "Rounding(Smoothing): ${(if (isStart) model.startPolygon else model.endPolygon).rectangleParam.roundingSmoothing.value}")
+                        Slider(
+                            value = (if (isStart) model.startPolygon else model.endPolygon).rectangleParam.roundingSmoothing.value,
+                            steps = 0,
+                            onValueChange = {
+                                (if (isStart) model.startPolygon else model.endPolygon).rectangleParam.roundingSmoothing.value =
+                                    get2Float(it)
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+
+                        Text("Width: ${(if (isStart) model.startPolygon else model.endPolygon).rectangleParam.widthAnimation.value}")
+                        Slider(
+                            value = (if (isStart) model.startPolygon else model.endPolygon).rectangleParam.widthAnimation.value,
+                            steps = 0,
+                            valueRange = 0.01f..2f,
+                            onValueChange = {
+                                (if (isStart) model.startPolygon else model.endPolygon).rectangleParam.widthAnimation.value =
+                                    get2Float(it)
+                                (if (isStart) model.startPolygon else model.endPolygon).rectangleParam.width.value =
+                                    roundingRadiusPx / 2f * it
+
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Text("Height: ${(if (isStart) model.startPolygon else model.endPolygon).rectangleParam.heightAnimation.value}")
+                        Slider(
+                            value = (if (isStart) model.startPolygon else model.endPolygon).rectangleParam.heightAnimation.value,
+                            steps = 0,
+                            valueRange = 0.01f..2f,
+                            onValueChange = {
+                                (if (isStart) model.startPolygon else model.endPolygon).rectangleParam.heightAnimation.value =
+                                    get2Float(it)
+                                (if (isStart) model.startPolygon else model.endPolygon).rectangleParam.height.value =
+                                    roundingRadiusPx / 2f * it
                             },
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -562,10 +654,12 @@ class ShapeActivity : ComponentActivity() {
             )
 
             RoundedPolygonType.RECTANGLE -> RoundedPolygon.rectangle(
-//                width = radius,
-//                height = radius / 2,
-//                centerX = offset.x,
-//                centerY = offset.y
+                width = roundedModel.rectangleParam.widthAnimation.value,
+                height =roundedModel.rectangleParam.heightAnimation.value,
+                rounding = CornerRounding(
+                    radius = roundedModel.rectangleParam.roundingRadiusAnimation.value,
+                    smoothing = roundedModel.rectangleParam.roundingSmoothing.value
+                ),
             )
 
             RoundedPolygonType.STAR -> RoundedPolygon.star(
@@ -652,8 +746,12 @@ class ShapeActivity : ComponentActivity() {
             )
 
             RoundedPolygonType.RECTANGLE -> RoundedPolygon.rectangle(
-                width = radius,
-                height = radius / 2,
+                width = if (isFixed) radius else roundedModel.rectangleParam.width.value,
+                height = if (isFixed) radius else roundedModel.rectangleParam.height.value,
+                rounding = CornerRounding(
+                    radius = roundedModel.rectangleParam.roundingRadius.value,
+                    smoothing = roundedModel.rectangleParam.roundingSmoothing.value
+                ),
                 centerX = offset.x,
                 centerY = offset.y
             )
@@ -702,7 +800,8 @@ class ShapeActivity : ComponentActivity() {
         val commonParam: CommonParam = CommonParam(),
         val circleParam: CircleParam = CircleParam(),
         val pillParam: PillParam = PillParam(),
-        val pillStarParam: PillStarParam = PillStarParam()
+        val pillStarParam: PillStarParam = PillStarParam(),
+        val rectangleParam: RectangleParam = RectangleParam(),
     )
 
     data class CommonParam(
@@ -722,7 +821,7 @@ class ShapeActivity : ComponentActivity() {
         val widthAnimation: MutableState<Float> = mutableStateOf(0f),
         val height: MutableState<Float> = mutableStateOf(0f),
         val heightAnimation: MutableState<Float> = mutableStateOf(0f),
-        )
+    )
 
     data class PillStarParam(
         val numVerticesPerRadius: MutableState<Int> = mutableStateOf(8),
@@ -734,6 +833,16 @@ class ShapeActivity : ComponentActivity() {
         val innerRoundingRadiusAnimation: MutableState<Float> = mutableStateOf(0f),
         val innerSmoothing: MutableState<Float> = mutableStateOf(0.5f),
         val vertexSpacing: MutableState<Float> = mutableStateOf(0.5f),
+        val width: MutableState<Float> = mutableStateOf(0f),
+        val widthAnimation: MutableState<Float> = mutableStateOf(0f),
+        val height: MutableState<Float> = mutableStateOf(0f),
+        val heightAnimation: MutableState<Float> = mutableStateOf(0f),
+    )
+
+    data class RectangleParam(
+        val roundingRadius: MutableState<Float> = mutableStateOf(0f),
+        val roundingRadiusAnimation: MutableState<Float> = mutableStateOf(0f),
+        val roundingSmoothing: MutableState<Float> = mutableStateOf(0.5f),
         val width: MutableState<Float> = mutableStateOf(0f),
         val widthAnimation: MutableState<Float> = mutableStateOf(0f),
         val height: MutableState<Float> = mutableStateOf(0f),
