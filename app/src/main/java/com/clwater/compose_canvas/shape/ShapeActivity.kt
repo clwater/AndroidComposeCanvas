@@ -172,6 +172,24 @@ class ShapeActivity : ComponentActivity() {
             model.endPolygon.rectangleParam.height.value =
                 itemSizePx / 2f * model.startPolygon.rectangleParam.heightAnimation.value
 
+
+            model.startPolygon.starParam.radiusAnimation.value = 1f
+            model.startPolygon.starParam.radius.value =
+                itemSizePx / 2f * model.startPolygon.starParam.radiusAnimation.value
+
+            model.endPolygon.starParam.radiusAnimation.value = 1f
+            model.endPolygon.starParam.radius.value =
+                itemSizePx / 2f * model.startPolygon.starParam.radiusAnimation.value
+
+
+            model.startPolygon.starParam.innerRadiusAnimation.value = 0.5f
+            model.startPolygon.starParam.innerRadius.value =
+                itemSizePx / 2f * model.startPolygon.starParam.innerRadiusAnimation.value
+
+            model.endPolygon.starParam.innerRadiusAnimation.value = 0.5f
+            model.endPolygon.starParam.innerRadius.value =
+                itemSizePx / 2f * model.startPolygon.starParam.innerRadiusAnimation.value
+
         }
 
 
@@ -609,7 +627,97 @@ class ShapeActivity : ComponentActivity() {
                         )
                     }
 
-                    else -> {}
+                    RoundedPolygonType.STAR ->{
+                        Text("NumVerticesPerRadius: ${(if (isStart) model.startPolygon else model.endPolygon).starParam.numVerticesPerRadius.value}")
+                        Slider(
+                            value = (if (isStart) model.startPolygon else model.endPolygon).starParam.numVerticesPerRadius.value.toFloat(),
+                            steps = 0,
+                            valueRange = 3f..12f,
+                            onValueChange = {
+                                (if (isStart) model.startPolygon else model.endPolygon).starParam.numVerticesPerRadius.value =
+                                    it.roundToInt()
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Text("Radius: ${(if (isStart) model.startPolygon else model.endPolygon).starParam.radiusAnimation.value}")
+                        Slider(
+                            value = (if (isStart) model.startPolygon else model.endPolygon).starParam.radiusAnimation.value,
+                            steps = 0,
+                            valueRange = 0.01f..1f,
+                            onValueChange = {
+                                (if (isStart) model.startPolygon else model.endPolygon).starParam.radiusAnimation.value =
+                                    get2Float(it)
+                                (if (isStart) model.startPolygon else model.endPolygon).starParam.radius.value =
+                                    roundingRadiusPx / 2f * it
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Text("InnerRadius: ${(if (isStart) model.startPolygon else model.endPolygon).starParam.innerRadiusAnimation.value}")
+                        Slider(
+                            value = (if (isStart) model.startPolygon else model.endPolygon).starParam.innerRadiusAnimation.value,
+                            steps = 0,
+                            valueRange = 0.01f..1f,
+                            onValueChange = {
+                                (if (isStart) model.startPolygon else model.endPolygon).starParam.innerRadiusAnimation.value =
+                                    get2Float(it)
+                                (if (isStart) model.startPolygon else model.endPolygon).starParam.innerRadius.value =
+                                    roundingRadiusPx / 2f * it
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+
+                        Text("Rounding(Radius): ${(if (isStart) model.startPolygon else model.endPolygon).starParam.roundingRadiusAnimation.value}")
+                        Slider(
+                            value = (if (isStart) model.startPolygon else model.endPolygon).starParam.roundingRadiusAnimation.value,
+                            steps = 0,
+                            onValueChange = {
+                                (if (isStart) model.startPolygon else model.endPolygon).starParam.roundingRadiusAnimation.value =
+                                    get2Float(it)
+                                (if (isStart) model.startPolygon else model.endPolygon).starParam.roundingRadius.value =
+                                    roundingRadiusPx / 2f * it
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Text(text = "Rounding(Smoothing): ${(if (isStart) model.startPolygon else model.endPolygon).starParam.roundingSmoothing.value}")
+                        Slider(
+                            value = (if (isStart) model.startPolygon else model.endPolygon).starParam.roundingSmoothing.value,
+                            steps = 0,
+                            onValueChange = {
+                                (if (isStart) model.startPolygon else model.endPolygon).starParam.roundingSmoothing.value =
+                                    get2Float(it)
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+
+                        Text("InnerRounding(Radius): ${(if (isStart) model.startPolygon else model.endPolygon).starParam.innerRoundingRadiusAnimation.value}")
+                        Slider(
+                            value = (if (isStart) model.startPolygon else model.endPolygon).starParam.innerRoundingRadiusAnimation.value,
+                            steps = 0,
+                            onValueChange = {
+                                (if (isStart) model.startPolygon else model.endPolygon).starParam.innerRoundingRadiusAnimation.value =
+                                    get2Float(it)
+                                (if (isStart) model.startPolygon else model.endPolygon).starParam.innerRoundingRadius.value =
+                                    roundingRadiusPx / 2f * it
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Text(text = "InnerRounding(Smoothing): ${(if (isStart) model.startPolygon else model.endPolygon).starParam.innerRoundingSmoothing.value}")
+                        Slider(
+                            value = (if (isStart) model.startPolygon else model.endPolygon).starParam.innerRoundingSmoothing.value,
+                            steps = 0,
+                            onValueChange = {
+                                (if (isStart) model.startPolygon else model.endPolygon).starParam.innerRoundingSmoothing.value =
+                                    get2Float(it)
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
 
 
@@ -663,11 +771,17 @@ class ShapeActivity : ComponentActivity() {
             )
 
             RoundedPolygonType.STAR -> RoundedPolygon.star(
-                numVerticesPerRadius = 6,
-//                radius = radius,
-//                innerRadius = radius / 2,
-//                centerX = offset.x,
-//                centerY = offset.y,
+                numVerticesPerRadius = roundedModel.starParam.numVerticesPerRadius.value,
+                radius = roundedModel.starParam.radiusAnimation.value,
+                innerRadius = roundedModel.starParam.innerRadiusAnimation.value,
+                rounding = CornerRounding(
+                    radius = roundedModel.starParam.roundingRadius.value,
+                    smoothing = roundedModel.starParam.roundingSmoothing.value
+                ),
+                innerRounding = CornerRounding(
+                    radius = roundedModel.starParam.innerRoundingRadius.value,
+                    smoothing = roundedModel.starParam.innerRoundingSmoothing.value
+                ),
             )
 
         }
@@ -757,9 +871,17 @@ class ShapeActivity : ComponentActivity() {
             )
 
             RoundedPolygonType.STAR -> RoundedPolygon.star(
-                numVerticesPerRadius = 6,
-                radius = radius,
-                innerRadius = radius / 2,
+                numVerticesPerRadius = roundedModel.starParam.numVerticesPerRadius.value,
+                radius = if (isFixed) radius else roundedModel.starParam.radius.value,
+                innerRadius = if (isFixed) radius / 2 else roundedModel.starParam.innerRadius.value,
+                rounding = CornerRounding(
+                    radius = roundedModel.starParam.roundingRadius.value,
+                    smoothing = roundedModel.starParam.roundingSmoothing.value
+                ),
+                innerRounding = CornerRounding(
+                    radius = roundedModel.starParam.innerRoundingRadius.value,
+                    smoothing = roundedModel.starParam.innerRoundingSmoothing.value
+                ),
                 centerX = offset.x,
                 centerY = offset.y,
             )
@@ -802,6 +924,7 @@ class ShapeActivity : ComponentActivity() {
         val pillParam: PillParam = PillParam(),
         val pillStarParam: PillStarParam = PillStarParam(),
         val rectangleParam: RectangleParam = RectangleParam(),
+        val starParam: StarParam = StarParam()
     )
 
     data class CommonParam(
@@ -847,6 +970,21 @@ class ShapeActivity : ComponentActivity() {
         val widthAnimation: MutableState<Float> = mutableStateOf(0f),
         val height: MutableState<Float> = mutableStateOf(0f),
         val heightAnimation: MutableState<Float> = mutableStateOf(0f),
+    )
+
+    data class StarParam(
+        val numVerticesPerRadius: MutableState<Int> = mutableStateOf(5),
+        val radius: MutableState<Float> = mutableStateOf(1f),
+        val radiusAnimation: MutableState<Float> = mutableStateOf(1f),
+        val innerRadius: MutableState<Float> = mutableStateOf(0.5f),
+        val innerRadiusAnimation: MutableState<Float> = mutableStateOf(0.5f),
+        val roundingRadius: MutableState<Float> = mutableStateOf(0f),
+        val roundingRadiusAnimation: MutableState<Float> = mutableStateOf(0f),
+        val roundingSmoothing: MutableState<Float> = mutableStateOf(0.5f),
+        val innerRoundingRadius: MutableState<Float> = mutableStateOf(0f),
+        val innerRoundingRadiusAnimation: MutableState<Float> = mutableStateOf(0f),
+        val innerRoundingSmoothing: MutableState<Float> = mutableStateOf(0.5f),
+
     )
 
 
