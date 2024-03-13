@@ -2,7 +2,6 @@ package com.clwater.compose_canvas.shape
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -13,6 +12,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,7 +23,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
@@ -47,6 +50,7 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -73,6 +77,7 @@ import com.clwater.compose_canvas.shape.tmp.toComposePath
 import com.clwater.compose_canvas.ui.theme.AndroidComposeCanvasTheme
 import java.math.RoundingMode
 import java.text.DecimalFormat
+import kotlin.math.floor
 import kotlin.math.roundToInt
 
 class ShapeActivity : ComponentActivity() {
@@ -226,9 +231,16 @@ class ShapeActivity : ComponentActivity() {
                 }
             }
 
-            RoundedPolygonAdjust(true, screenWidth / 3f + 8.dp, colors[6])
-            RoundedPolygonAdjust(false, screenWidth / 3f + 8.dp, colors[7])
-            AnimationRoundPolygon()
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                AnimationRoundPolygon()
+                RoundedPolygonAdjust(true, screenWidth / 3f + 8.dp, colors[6])
+                RoundedPolygonAdjust(false, screenWidth / 3f + 8.dp, colors[7])
+            }
+
         }
 
     }
@@ -246,10 +258,21 @@ class ShapeActivity : ComponentActivity() {
             getRoundPolygonAnimation(model.endPolygon)
         }
 
+        val addImage = remember {
+            mutableStateOf(true)
+        }
+        val addRotation = remember {
+            mutableStateOf(true)
+        }
+        val addScale = remember {
+            mutableStateOf(true)
+        }
+
+
 
         val infiniteTransition = rememberInfiniteTransition("infinite outline movement")
         val animatedProgress = infiniteTransition.animateFloat(
-            initialValue = 0.5f,
+            initialValue = 0f,
             targetValue = 1f,
             animationSpec = infiniteRepeatable(
                 tween(2000, easing = LinearEasing),
@@ -266,6 +289,24 @@ class ShapeActivity : ComponentActivity() {
             ),
             label = "animatedMorphProgress"
         )
+        val animationScale = infiniteTransition.animateFloat(
+            initialValue = 0.5f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                tween(2000, easing = LinearEasing),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "animationScale"
+        )
+        val animationColor = infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                tween(10000, easing = LinearEasing),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "animationColor"
+        )
 
 
         val shape = remember {
@@ -273,7 +314,8 @@ class ShapeActivity : ComponentActivity() {
                 CustomRotatingMorphShape(
                     Morph(shapeStart, shapeEnd),
                     animatedProgress.value,
-                    animatedRotation.value
+                    animatedRotation.value,
+                    animationScale.value
                 )
             )
         }
@@ -287,26 +329,65 @@ class ShapeActivity : ComponentActivity() {
             shapeEnd = getRoundPolygonAnimation(model.endPolygon)
             shape.value = CustomRotatingMorphShape(
                 Morph(shapeStart, shapeEnd),
-//                animatedProgress.value,
-                0f,
-                animatedRotation.value
+                animatedProgress.value,
+                if (addRotation.value) animatedRotation.value else 0f,
+                if (addScale.value) animationScale.value else 1f
             )
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(screenWidth / 3f),
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.avatar),
-                contentDescription = "",
-                contentScale = ContentScale.Crop,
+
+        Row {
+            Box(
                 modifier = Modifier
-                    .clip(shape.value)
-                    .size(model.itemSize)
-            )
+                    .weight(1f)
+                    .height(screenWidth / 3f),
+            ) {
+                if (addImage.value){
+                    Image(
+                        painter = painterResource(id = R.drawable.avatar),
+                        contentDescription = "",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .clip(shape.value)
+                            .size(model.itemSize)
+                            .background(Color.Red)
+                    )
+                }else {
+                    Box(
+                        modifier = Modifier
+                            .clip(shape.value)
+                            .size(model.itemSize)
+                            .background(color = interpolateColors(animationColor.value, colors))
+                    )
+                }
+
+            }
+            Column(
+                modifier = Modifier.weight(2f)
+            ) {
+                Row {
+                    Button(onClick = { addRotation.value = !addRotation.value }, modifier = Modifier
+                        .padding(4.dp)
+                        .weight(1f)) {
+                        Text(text = if (addRotation.value) "Rotation" else "No Rotation")
+                    }
+                    Button(onClick = { addScale.value = !addScale.value }, modifier = Modifier
+                        .padding(4.dp)
+                        .weight(1f)) {
+                        Text(text = if (addScale.value) "Scale" else "No Scale")
+                    }
+                }
+                Row {
+                    Button(onClick = { addImage.value = !addImage.value }, modifier = Modifier
+                        .padding(4.dp)
+                        .weight(0.5f)) {
+                        Text(text = if (addImage.value) "Image" else "Color")
+
+                    }
+                }
+            }
         }
+
     }
 
     @Composable
@@ -725,7 +806,7 @@ class ShapeActivity : ComponentActivity() {
         }
     }
 
-    fun getRoundPolygonAnimation(roundedModel: RoundedPolygonModel): RoundedPolygon {
+    private fun getRoundPolygonAnimation(roundedModel: RoundedPolygonModel): RoundedPolygon {
         return when (roundedModel.type.value) {
             RoundedPolygonType.Common -> RoundedPolygon(
                 numVertices = roundedModel.commonParam.numVertices.value,
@@ -787,11 +868,11 @@ class ShapeActivity : ComponentActivity() {
         }
     }
 
-    fun getRoundPolygon(model: RoundedPolygonModel, radius: Float): RoundedPolygon {
+    private fun getRoundPolygon(model: RoundedPolygonModel, radius: Float): RoundedPolygon {
         return getRoundPolygon(model, radius, Offset(radius, radius))
     }
 
-    fun getRoundPolygon(type: RoundedPolygonType, radius: Float, offset: Offset): RoundedPolygon {
+    private fun getRoundPolygon(type: RoundedPolygonType, radius: Float, offset: Offset): RoundedPolygon {
         return getRoundPolygon(
             RoundedPolygonModel(
                 mutableStateOf(type),
@@ -799,7 +880,7 @@ class ShapeActivity : ComponentActivity() {
         )
     }
 
-    fun getRoundPolygon(
+    private fun getRoundPolygon(
         roundedModel: RoundedPolygonModel,
         radius: Float,
         offset: Offset
@@ -807,7 +888,7 @@ class ShapeActivity : ComponentActivity() {
         return getRoundPolygon(roundedModel, radius, offset, false)
     }
 
-    fun getRoundPolygon(
+    private fun getRoundPolygon(
         roundedModel: RoundedPolygonModel,
         radius: Float,
         offset: Offset,
@@ -902,7 +983,20 @@ class ShapeActivity : ComponentActivity() {
     )
 
 
-    fun get2Float(usedFloat: Float): Float {
+    private fun interpolateColors(
+        progress: Float,
+        colorsInput: List<Color>,
+    ): Color {
+        if (progress == 1f) return colorsInput.last()
+
+        val scaledProgress = progress * (colorsInput.size - 1)
+        val oldColor = colorsInput[scaledProgress.toInt()]
+        val newColor = colorsInput[(scaledProgress + 1f).toInt()]
+        val newScaledAnimationValue = scaledProgress - floor(scaledProgress)
+        return lerp(start = oldColor, stop = newColor, fraction = newScaledAnimationValue)
+    }
+
+    private fun get2Float(usedFloat: Float): Float {
         val df = DecimalFormat("#.00")
         df.roundingMode = RoundingMode.CEILING
         return df.format(usedFloat).toFloat()
@@ -910,10 +1004,6 @@ class ShapeActivity : ComponentActivity() {
 
     @Composable
     fun Dp.dpToPx() = with(LocalDensity.current) { this@dpToPx.toPx() }
-
-
-    @Composable
-    fun Int.pxToDp() = with(LocalDensity.current) { this@pxToDp.toDp() }
 
     data class RoundedPolygonModel(
         var type: MutableState<RoundedPolygonType> = mutableStateOf(
@@ -1004,7 +1094,8 @@ class ShapeActivity : ComponentActivity() {
     class CustomRotatingMorphShape(
         private val morph: Morph,
         private val percentage: Float,
-        private val rotation: Float
+        private val rotation: Float,
+        private val scale: Float
     ) : Shape {
 
         private val matrix = Matrix()
@@ -1015,8 +1106,8 @@ class ShapeActivity : ComponentActivity() {
         ): Outline {
             // Below assumes that you haven't changed the default radius of 1f, nor the centerX and centerY of 0f
             // By default this stretches the path to the size of the container, if you don't want stretching, use the same size.width for both x and y.
-            matrix.scale(size.width / 2f, size.height / 2f)
-            matrix.translate(1f, 1f)
+            matrix.translate(size.width / 2f,  size.height / 2f)
+            matrix.scale(size.width / 2f * scale , size.height / 2f * scale)
             matrix.rotateZ(rotation)
 
             val path = morph.toComposePath(progress = percentage)
@@ -1026,7 +1117,7 @@ class ShapeActivity : ComponentActivity() {
         }
     }
 
-    fun List<Cubic>.toPath(path: Path = Path(), scale: Float = 1f): Path {
+    private fun List<Cubic>.toPath(path: Path = Path(), scale: Float = 1f): Path {
         path.rewind()
         firstOrNull()?.let { first ->
             path.moveTo(first.anchor0X * scale, first.anchor0Y * scale)
